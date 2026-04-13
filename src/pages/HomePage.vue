@@ -36,6 +36,18 @@ import { Button } from '@/components/ui/button';
           >
             Form Renderer
           </RouterLink>
+          <RouterLink
+            class="inline-flex items-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:opacity-90 transition"
+            to="/codeparl"
+          >
+            Codeparl Form Builder
+          </RouterLink>
+          <RouterLink
+            class="inline-flex items-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:opacity-90 transition"
+            to="/codeparl/render"
+          >
+            Codeparl Renderer
+          </RouterLink>
         </div>
         <p class="text-sm text-muted-foreground max-w-2xl">
           <strong>Form Builder:</strong> Create forms visually with drag-and-drop interface. Export schema and submit to backend.
