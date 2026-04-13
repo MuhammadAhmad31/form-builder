@@ -220,10 +220,20 @@ const emit = defineEmits<{
           <div>
             <h3 class="text-sm font-semibold">Field Options</h3>
             <p class="mt-1 text-sm text-muted-foreground">
-              Kelola label, value, dan susunan opsi pilihan.
+              {{
+                selectedField.type === 'checkbox' && selectedField.selectionMode === 'single'
+                  ? 'Mode single memakai satu checkbox saja. Ubah label dan value checkbox di bawah.'
+                  : 'Kelola label, value, dan susunan opsi pilihan.'
+              }}
             </p>
           </div>
-          <Button type="button" variant="outline" size="sm" @click="emit('add-option')">
+          <Button
+            v-if="selectedField.type !== 'checkbox' || selectedField.selectionMode === 'multiple'"
+            type="button"
+            variant="outline"
+            size="sm"
+            @click="emit('add-option')"
+          >
             Tambah Opsi
           </Button>
         </div>
@@ -295,7 +305,13 @@ const emit = defineEmits<{
                 />
               </div>
 
-              <Button type="button" variant="outline" size="sm" @click="emit('remove-option', option.id)">
+              <Button
+                v-if="selectedField.type !== 'checkbox' || selectedField.selectionMode === 'multiple'"
+                type="button"
+                variant="outline"
+                size="sm"
+                @click="emit('remove-option', option.id)"
+              >
                 Hapus Opsi
               </Button>
             </div>

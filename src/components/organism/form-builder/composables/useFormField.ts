@@ -29,6 +29,14 @@ export function useFormField(initialFields: BuilderField[] = []) {
     return fields.value.reduce((max, field) => Math.max(max, field.y + field.h), 0)
   }
 
+  function createDefaultOption(order = 1): FieldOption {
+    return {
+      id: nextOptionId(),
+      label: `Option ${order}`,
+      value: `option-${order}`,
+    }
+  }
+
   function normalizeField(field: BuilderField) {
     field.w = Math.max(MIN_WIDTH, Math.min(GRID_COLUMNS, field.w))
     field.h = Math.max(field.type === 'textarea' ? 6 : field.type === 'checkbox' || field.type === 'radio' ? 5 : MIN_HEIGHT, field.h)
@@ -75,8 +83,8 @@ export function useFormField(initialFields: BuilderField[] = []) {
       spacing: { top: 0, right: 0, bottom: 16, left: 0 },
       options: hasOptions
         ? [
-            { id: nextOptionId(), label: 'Option 1', value: 'option-1' },
-            { id: nextOptionId(), label: 'Option 2', value: 'option-2' },
+            createDefaultOption(1),
+            createDefaultOption(2),
           ]
         : [],
       x: 0,
@@ -119,6 +127,14 @@ export function useFormField(initialFields: BuilderField[] = []) {
     selectedField.value[key] = value
 
     if (key === 'selectionMode' && selectedField.value.type === 'checkbox') {
+      if (selectedField.value.options.length === 0) {
+        selectedField.value.options = [createDefaultOption(1)]
+      }
+
+      if (value === 'single') {
+        selectedField.value.options = [selectedField.value.options[0]]
+      }
+
       selectedField.value.value = value === 'multiple'
         ? Array.isArray(selectedField.value.value)
           ? selectedField.value.value
@@ -147,12 +163,9 @@ export function useFormField(initialFields: BuilderField[] = []) {
 
   function addOption() {
     if (!selectedField.value || !['select', 'checkbox', 'radio'].includes(selectedField.value.type)) return
+    if (selectedField.value.type === 'checkbox' && selectedField.value.selectionMode === 'single') return
     const order = selectedField.value.options.length + 1
-    selectedField.value.options.push({
-      id: nextOptionId(),
-      label: `Option ${order}`,
-      value: `option-${order}`,
-    })
+    selectedField.value.options.push(createDefaultOption(order))
   }
 
   function updateOption(optionId: string, key: keyof FieldOption, value: string) {
@@ -164,6 +177,7 @@ export function useFormField(initialFields: BuilderField[] = []) {
 
   function removeOption(optionId: string) {
     if (!selectedField.value || !['select', 'checkbox', 'radio'].includes(selectedField.value.type)) return
+    if (selectedField.value.type === 'checkbox' && selectedField.value.selectionMode === 'single') return
     selectedField.value.options = selectedField.value.options.filter((option: FieldOption) => option.id !== optionId)
   }
 

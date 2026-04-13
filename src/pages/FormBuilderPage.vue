@@ -3,7 +3,10 @@ import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { FormBuilder } from '@/components/organism/form-builder'
 import { useFormStore } from '@/composables/useFormStore'
-import type { FormSchema } from '@/services/formService'
+import {
+  // formService,
+  type FormSchema
+} from '@/services/formService'
 
 const router = useRouter()
 const { saveFormSchema } = useFormStore()
@@ -16,6 +19,10 @@ async function handleFormSubmit(schema: FormSchema) {
     const formId = saveFormSchema(schema)
     submittedFormId.value = formId
 
+    // submitted to api service
+    // const result = formService.submitFormSchema(schema)
+
+    // console.log('Form submitted to service:', result)
     console.log('Form saved to store:', formId)
   } catch (error) {
     console.error('Failed to save form:', error)
@@ -23,7 +30,6 @@ async function handleFormSubmit(schema: FormSchema) {
   }
 }
 
-// Auto-navigate to renderer when form is saved
 watch(submittedFormId, (formId) => {
   if (formId) {
     setTimeout(() => {
@@ -36,8 +42,6 @@ watch(submittedFormId, (formId) => {
 <template>
   <div>
     <FormBuilder :on-submit="handleFormSubmit" />
-
-    <!-- Success message -->
     <div v-if="submittedFormId" class="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div class="bg-white rounded-lg shadow-xl p-8 max-w-md text-center space-y-4">
         <h2 class="text-xl font-bold text-green-600">✓ Form Saved!</h2>

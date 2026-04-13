@@ -48,7 +48,6 @@ export function useFormSchema(fields: Ref<BuilderField[]>, onSubmitCallback?: (s
       const id = saveFormSchema(schema)
       console.log('Form schema submitted successfully to store:', id)
 
-      // Call the onSubmit callback if provided
       if (onSubmitCallback) {
         await onSubmitCallback(schema)
       }

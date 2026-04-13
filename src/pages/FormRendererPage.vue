@@ -36,12 +36,9 @@ function loadFormSchema(id: string) {
 
 function handleFormSubmit(data: Record<string, any>) {
   console.log('Form submitted with data:', data)
-  // You can handle the submission here
-  // For now, just log to console
 }
 
 onMounted(() => {
-  // Load from query parameter if provided
   const queryId = route.query.id as string
   if (queryId) {
     formId.value = queryId
