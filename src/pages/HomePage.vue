@@ -16,9 +16,6 @@ import { Button } from '@/components/ui/button';
         <Button variant="outline" size="sm" class="mt-4">
           Tombol Contoh
         </Button>
-        <p class="max-w-2xl text-base leading-7 text-muted-foreground">
-          Struktur `pages` sekarang sudah aktif lewat `vue-router`. Gunakan folder ini untuk komponen level halaman.
-        </p>
       </div>
 
       <div class="space-y-4">
@@ -47,6 +44,12 @@ import { Button } from '@/components/ui/button';
             to="/codeparl/render"
           >
             Codeparl Renderer
+          </RouterLink>
+          <RouterLink
+            class="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition"
+            to="/form-builder-simple"
+          >
+            Simple Form Builder
           </RouterLink>
         </div>
         <p class="text-sm text-muted-foreground max-w-2xl">

@@ -28,6 +28,11 @@ const router = createRouter({
       name: "codeparl-form-renderer",
       component: () => import("@/pages/CodeparlFormRendererPage.vue"),
     },
+    {
+      path: "/form-builder-simple",
+      name: "form-builder-simple",
+      component: () => import("@/components/organism/form-non-canvas/FormBuilder.vue"),
+    },
   ],
 });
 
