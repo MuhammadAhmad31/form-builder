@@ -1,192 +1,199 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { FormStructure, FormField } from '@/composables/useFormStructure'
-import { useFormRenderer } from '@/composables/useFormRenderer'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useFormStorage } from "@/composables/useFormStorage";
+import type { FormSection } from "@/composables/useFormStructure";
+import type { SavedForm } from "@/composables/useFormStorage";
+import type { AcceptableValue } from "reka-ui";
+import { computed, ref } from "vue";
+const selectedFormId = ref<string | null>(null);
+const selectedForm = ref<SavedForm | null>(null);
+const selectedFieldValues = ref<Record<string, string>>({});
+const selectedFieldCheckboxes = ref<Record<string, boolean[]>>({});
 
-interface Props {
-  formStructure: FormStructure
-}
+const storage = useFormStorage();
+const savedFormList = computed(() => storage.savedForms.value || []);
+const selectedSections = computed<FormSection[]>(
+  () => selectedForm.value?.formStructure.sections || [],
+);
 
-interface Emits {
-  (e: 'submit', data: Record<string, any>): void
-  (e: 'cancel'): void
-}
+const handleFormSelect = (value: AcceptableValue) => {
+  if (typeof value !== "string") return;
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+  const formId = value;
+  const form = storage.getForm(formId);
+  if (form) {
+    selectedFormId.value = formId;
+    selectedForm.value = form;
+    selectedFieldValues.value = {};
+    selectedFieldCheckboxes.value = {};
+  }
+};
 
-const renderer = useFormRenderer(props.formStructure)
-const isSubmitting = ref(false)
+const handleFieldValueSelect = (fieldId: string, value: AcceptableValue) => {
+  if (typeof value !== "string") return;
 
-function getFieldTypeLabel(type: FormField['type']): string {
-  return {
-    akun: 'Dari Akun',
-    formula: 'Formula',
-    text: 'Teks',
-    number: 'Angka',
-  }[type]
-}
+  selectedFieldValues.value[fieldId] = value;
 
-function getFieldIcon(type: FormField['type']): string {
-  return {
-    akun: '◉',
-    formula: 'ƒ',
-    text: 'T',
-    number: '#',
-  }[type]
-}
-
-function handleSubmit() {
-  isSubmitting.value = true
-  const data = renderer.submitForm()
-
-  if (data) {
-    emit('submit', data)
+  const checkboxCount = Number.parseInt(value, 10);
+  if (Number.isNaN(checkboxCount) || checkboxCount <= 0) {
+    selectedFieldCheckboxes.value[fieldId] = [];
+    return;
   }
 
-  isSubmitting.value = false
-}
+  const previous = selectedFieldCheckboxes.value[fieldId] || [];
+  selectedFieldCheckboxes.value[fieldId] = Array.from(
+    { length: checkboxCount },
+    (_, index) => previous[index] ?? false,
+  );
+};
 
-function handleCancel() {
-  if (confirm('Batalkan pengisian form?')) {
-    emit('cancel')
+const getCheckboxCount = (fieldId: string) => {
+  const value = selectedFieldValues.value[fieldId];
+  const count = Number.parseInt(value || "0", 10);
+  return Number.isNaN(count) ? 0 : count;
+};
+
+const isCheckboxChecked = (fieldId: string, index: number) => {
+  return selectedFieldCheckboxes.value[fieldId]?.[index] ?? false;
+};
+
+const toggleCheckbox = (fieldId: string, index: number, checked: boolean) => {
+  if (!selectedFieldCheckboxes.value[fieldId]) {
+    selectedFieldCheckboxes.value[fieldId] = [];
   }
-}
+
+  selectedFieldCheckboxes.value[fieldId][index] = checked;
+};
+
+const getCheckedCount = (fieldId: string) => {
+  return (selectedFieldCheckboxes.value[fieldId] || []).filter(Boolean).length;
+};
 </script>
-
 <template>
-  <div class="min-h-screen bg-slate-50 px-6 py-8">
-    <div class="mx-auto max-w-3xl">
-      <!-- Header -->
-      <div class="mb-8 space-y-2">
-        <h1 class="text-3xl font-bold text-slate-900">{{ formStructure.title }}</h1>
-        <p class="text-slate-600">Isi form di bawah ini dengan data yang diperlukan</p>
-      </div>
+  <div class="p-4">
+    <h2 class="text-2xl font-bold mb-4">Renderer Forms</h2>
 
-      <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="space-y-6">
-        <!-- Sections -->
-        <div v-for="section in formStructure.sections" :key="section.id" class="space-y-4">
-          <!-- Section header -->
-          <div class="border-b-2 border-slate-200 pb-3">
-            <h2 class="text-lg font-bold text-slate-900">{{ section.name }}</h2>
-            <p class="text-sm text-slate-600">{{ section.fields.length }} item</p>
-          </div>
+    <Select
+      :model-value="selectedFormId"
+      @update:model-value="handleFormSelect"
+    >
+      <SelectTrigger class="w-full">
+        <SelectValue placeholder="Select a saved form" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Saved Forms</SelectLabel>
+          <SelectItem
+            v-for="form in savedFormList"
+            :key="form.id"
+            :value="form.id"
+          >
+            {{ form.name }}
+          </SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
 
-          <!-- Fields -->
-          <div class="space-y-4 pl-4">
-            <div v-for="field in section.fields" :key="field.id" class="space-y-2">
-              <!-- Field label -->
-              <div class="flex items-start justify-between gap-3">
-                <div class="flex-1">
-                  <label
-                    :for="field.id"
-                    class="flex items-center gap-2 text-sm font-medium text-slate-900"
-                  >
-                    <span
-                      class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-600"
-                    >
-                      {{ getFieldIcon(field.type) }}
-                    </span>
+    <div class="mt-6">
+      <p class="text-sm text-muted-foreground">
+        Select a form to load its schema and data for rendering.
+      </p>
+
+      <div class="grid grid-cols-2 gap-4">
+          <div v-if="selectedSections.length > 0" class="mt-4 space-y-4">
+            <div
+              v-for="section in selectedSections.filter((section) =>
+                section.fields.some((field) => field.type !== 'formula'),
+              )"
+              :key="section.id"
+              class="space-y-2"
+            >
+              <p class="text-sm font-medium">{{ section.name }}</p>
+    
+              <div
+                v-for="field in section.fields"
+                :key="field.id"
+                class="space-y-2 p-3"
+              >
+                <div v-if="field.type !== 'formula'" class="grid grid-cols-3 items-center gap-3">
+                  <p class="text-sm text-muted-foreground ml-4">
                     {{ field.name }}
-                  </label>
-                  <p v-if="field.description" class="mt-1 text-xs text-slate-500">
-                    {{ field.description }}
                   </p>
+
+                  <p>
+                    source: {{ field.akunSource }}
+                  </p>
+                  <Select
+                    :model-value="selectedFieldValues[field.id]"
+                    @update:model-value="
+                      (value) => handleFieldValueSelect(field.id, value)
+                    "
+                  >
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Pilih" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Value</SelectLabel>
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
+                        <SelectItem value="3">3</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <span
-                  class="inline-flex shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold"
-                  :class="{
-                    'bg-emerald-50 text-emerald-700': field.type === 'akun',
-                    'bg-violet-50 text-violet-700': field.type === 'formula',
-                    'bg-blue-50 text-blue-700': field.type === 'text',
-                    'bg-orange-50 text-orange-700': field.type === 'number',
-                  }"
-                >
-                  {{ getFieldTypeLabel(field.type) }}
-                </span>
-              </div>
 
-              <!-- Field input -->
-              <div v-if="field.type === 'akun'" class="mt-2">
-                <input
-                  :id="field.id"
-                  :value="(renderer.formData as any)[field.code]"
-                  type="number"
-                  step="0.01"
-                  placeholder="Masukkan nilai akun"
-                  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  @input="(e) => (renderer.formData as any)[field.code] = Number((e.target as HTMLInputElement).value)"
-                />
-                <p
-                  v-if="(renderer.formErrors as any)[field.code]"
-                  class="mt-1 text-xs text-red-600"
+                <div
+                  v-if="field.type !== 'formula' && getCheckboxCount(field.id) > 0"
+                  class="ml-4 flex flex-wrap gap-3"
                 >
-                  {{ (renderer.formErrors as any)[field.code] }}
-                </p>
-              </div>
-
-              <!-- Formula field (read-only) -->
-              <div v-else-if="field.type === 'formula'" class="mt-2">
-                <div class="rounded-lg border border-slate-300 bg-slate-100 px-4 py-2.5 font-mono text-sm text-slate-900">
-                  <span class="text-slate-600">{{ renderer.formatNumber(renderer.getFieldValue(field)) }}</span>
+                  <label
+                    v-for="index in getCheckboxCount(field.id)"
+                    :key="`${field.id}-checkbox-${index}`"
+                    class="inline-flex items-center gap-2 px-2 py-1 text-xs"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="isCheckboxChecked(field.id, index - 1)"
+                      @change="toggleCheckbox(field.id, index - 1, ($event.target as HTMLInputElement).checked)"
+                    />
+                    <span>Item {{ index }}</span>
+                  </label>
                 </div>
-                <p class="mt-1 text-xs text-slate-500">
-                  Formula: <code class="font-mono">{{ field.formula }}</code>
-                </p>
-              </div>
-
-              <!-- Number field -->
-              <div v-else-if="field.type === 'number'" class="mt-2">
-                <input
-                  :id="field.id"
-                  :value="(renderer.formData as any)[field.code]"
-                  type="number"
-                  step="0.01"
-                  placeholder="Masukkan nilai"
-                  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  @input="(e) => (renderer.formData as any)[field.code] = Number((e.target as HTMLInputElement).value)"
-                />
-              </div>
-
-              <!-- Text field -->
-              <div v-else-if="field.type === 'text'" class="mt-2">
-                <input
-                  :id="field.id"
-                  :value="(renderer.formData as any)[field.code]"
-                  type="text"
-                  placeholder="Masukkan teks"
-                  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  @input="(e) => (renderer.formData as any)[field.code] = (e.target as HTMLInputElement).value"
-                />
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Action buttons -->
-        <div class="mt-8 flex gap-3 border-t border-slate-200 pt-6">
-          <button
-            type="button"
-            class="flex-1 rounded-lg border border-slate-300 px-6 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
-            @click="handleCancel"
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            :disabled="isSubmitting"
-            class="flex-2 rounded-lg bg-emerald-600 px-6 py-3 font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {{ isSubmitting ? 'Mengirim...' : 'Kirim Form' }}
-          </button>
-        </div>
-      </form>
-
-      <!-- Debug: Form data preview -->
-      <div class="mt-8 rounded-lg border border-slate-300 bg-slate-50 p-4">
-        <h3 class="text-sm font-semibold text-slate-900">Preview Data</h3>
-        <pre class="mt-2 max-h-48 overflow-auto text-xs text-slate-700">{{ JSON.stringify(renderer.getFormDataWithFormulas, null, 2) }}</pre>
+          <div v-else class="mt-4 text-sm text-muted-foreground">
+            No sections or fields available in this form.
+          </div>
+          <div>
+            <p>Preview</p>
+            <div class="mt-2 rounded bg-muted p-2 text-sm">
+                <div v-for="section in selectedSections" :key="section.id">
+                  <p class="font-semibold">{{ section.name }}</p>
+                  <div
+                    class="ml-4"
+                    v-for="field in section.fields"
+                    :key="field.id"
+                  >
+                    <p v-if="field.type !== 'formula'">
+                      {{ field.name }}: {{ selectedFieldValues[field.id] || 'N/A' }}
+                    </p>
+                    <p v-else>
+                      {{ field.name }}: {{ field.formula }}
+                    </p>
+                  </div>
+                </div>
+            </div>
+          </div>
       </div>
     </div>
   </div>

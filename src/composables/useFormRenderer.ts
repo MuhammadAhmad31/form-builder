@@ -8,6 +8,7 @@ export function useFormRenderer(formStructure: FormStructure) {
   // Initialize form data
   const initializeFormData = () => {
     const data: Record<string, any> = {}
+    if (!formStructure?.sections) return
     formStructure.sections.forEach((section) => {
       section.fields.forEach((field) => {
         if (field.type === 'akun') {
@@ -58,13 +59,15 @@ export function useFormRenderer(formStructure: FormStructure) {
   const getFormDataWithFormulas = computed(() => {
     const data: Record<string, any> = { ...formData.value }
 
-    formStructure.sections.forEach((section) => {
-      section.fields.forEach((field) => {
-        if (field.type === 'formula' && field.formula) {
-          data[field.code] = calculateFormula(field.formula)
-        }
+    if (formStructure?.sections) {
+      formStructure.sections.forEach((section) => {
+        section.fields.forEach((field) => {
+          if (field.type === 'formula' && field.formula) {
+            data[field.code] = calculateFormula(field.formula)
+          }
+        })
       })
-    })
+    }
 
     return data
   })
@@ -74,14 +77,16 @@ export function useFormRenderer(formStructure: FormStructure) {
     formErrors.value = {}
     let isValid = true
 
-    formStructure.sections.forEach((section) => {
-      section.fields.forEach((field) => {
-        if (field.type === 'akun' && !formData.value[field.code]) {
-          formErrors.value[field.code] = `${field.name} harus diisi`
-          isValid = false
-        }
+    if (formStructure?.sections) {
+      formStructure.sections.forEach((section) => {
+        section.fields.forEach((field) => {
+          if (field.type === 'akun' && !formData.value[field.code]) {
+            formErrors.value[field.code] = `${field.name} harus diisi`
+            isValid = false
+          }
+        })
       })
-    })
+    }
 
     return isValid
   }

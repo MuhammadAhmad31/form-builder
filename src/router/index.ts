@@ -33,6 +33,11 @@ const router = createRouter({
       name: "form-builder-simple",
       component: () => import("@/components/organism/form-non-canvas/FormBuilder.vue"),
     },
+    {
+      path: "/form-renderer-simple",
+      name: "form-renderer-simple",
+      component: () => import("@/components/organism/form-non-canvas/FormRenderer.vue"),
+    },
   ],
 });
 

@@ -51,6 +51,12 @@ import { Button } from '@/components/ui/button';
           >
             Simple Form Builder
           </RouterLink>
+          <RouterLink
+            class="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition"
+            to="/form-renderer-simple"
+          >
+            Simple Form Renderer
+          </RouterLink>
         </div>
         <p class="text-sm text-muted-foreground max-w-2xl">
           <strong>Form Builder:</strong> Create forms visually with drag-and-drop interface. Export schema and submit to backend.
