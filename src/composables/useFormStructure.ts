@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 
 export type FieldType = 'akun' | 'formula' | 'text' | 'number'
+export type FormPreviewRowType = 'item' | 'subsection' | 'section'
 export type AkunType = 'pendapatan' | 'beban' | 'aset' | 'kewajiban' | 'ekuitas'
 export type AkunSource = 'semua_akun_tipe' | 'akun_spesifik' | 'semua_akun'
 export type AkunCalc = 'mutasi_bersih' | 'saldo_akhir' | 'mutasi_debit' | 'mutasi_kredit'
@@ -12,6 +13,7 @@ export interface FormField {
   type: FieldType
   formula?: string
   description?: string
+  previewRowType?: FormPreviewRowType
   akunSource?: AkunSource
   akunTypes?: AkunType[]
   akunCalc?: AkunCalc

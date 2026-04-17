@@ -76,7 +76,7 @@ export function useFormBuilder({ fb, storage }: UseFormBuilderOptions) {
     showSaveModal.value = true
   }
 
-  const openLoadModal = () => {
+  const openLoadModal = () => { 
     showLoadModal.value = true
   }
 
