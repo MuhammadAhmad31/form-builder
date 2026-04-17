@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { AkunType, FormField, FormSection } from '@/composables/useFormStructure'
+import type { AkunType, FormField, FormPreviewRowType, FormSection } from '@/composables/useFormStructure'
 import {
   AKUN_CALC_OPTIONS,
   AKUN_SOURCE_OPTIONS,
   AKUN_TYPE_OPTIONS,
+  PREVIEW_ROW_TYPE_OPTIONS,
   TYPE_OPTIONS,
   fieldTypeDot,
   typeIconClass,
@@ -21,6 +22,7 @@ interface Props {
     type: FormField['type']
     formula: string
     description: string
+    previewRowType?: FormPreviewRowType
     akunSource: NonNullable<FormField['akunSource']>
     akunTypes: NonNullable<FormField['akunTypes']>
     akunCalc: NonNullable<FormField['akunCalc']>
@@ -36,6 +38,7 @@ const emit = defineEmits<{
   'update-name': [name: string]
   'update-description': [description: string]
   'select-type': [type: FormField['type']]
+  'update-preview-row-type': [rowType?: FormPreviewRowType]
   'update-source': [source: NonNullable<FormField['akunSource']>]
   'update-calc': [calc: NonNullable<FormField['akunCalc']>]
   'toggle-akun-type': [type: AkunType]
@@ -65,6 +68,15 @@ const handleSourceChange = (event: Event) => {
 const handleCalcChange = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value as NonNullable<FormField['akunCalc']>
   emit('update-calc', value)
+}
+
+const handlePreviewRowTypeChange = (event: Event) => {
+  const value = (event.target as HTMLSelectElement).value
+  if (!value) {
+    emit('update-preview-row-type', undefined)
+    return
+  }
+  emit('update-preview-row-type', value as FormPreviewRowType)
 }
 </script>
 
@@ -151,6 +163,26 @@ const handleCalcChange = (event: Event) => {
           </span>
         </button>
       </div>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-semibold text-slate-600">Style baris di preview</label>
+      <div class="relative">
+        <select
+          :value="fieldForm.previewRowType || ''"
+          class="w-full appearance-none rounded-lg border border-slate-300 bg-white px-3 py-2 pr-8 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500"
+          @change="handlePreviewRowTypeChange"
+        >
+          <option value="">Auto (default)</option>
+          <option v-for="option in PREVIEW_ROW_TYPE_OPTIONS" :key="option.value" :value="option.value">
+            {{ option.label }} - {{ option.desc }}
+          </option>
+        </select>
+        <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-600" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 4l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <p class="text-[11px] text-slate-500">Auto: formula jadi biru, selain formula jadi detail biasa.</p>
     </div>
 
     <template v-if="fieldForm.type === 'akun'">

@@ -34,6 +34,7 @@ const {
   handleUpdateSection,
   toggleAkunType,
   onTypeClick,
+  onPreviewRowTypeChange,
   onAkunSourceChange,
   onAkunCalcChange,
   getTokenSign,
@@ -81,6 +82,7 @@ const updateSectionName = (name: string) => {
       @update-name="(name) => (fieldForm.name = name)"
       @update-description="(description) => (fieldForm.description = description)"
       @select-type="onTypeClick"
+      @update-preview-row-type="onPreviewRowTypeChange"
       @update-source="(source) => { fieldForm.akunSource = source; onAkunSourceChange() }"
       @update-calc="(calc) => { fieldForm.akunCalc = calc; onAkunCalcChange() }"
       @toggle-akun-type="toggleAkunType"

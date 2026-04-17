@@ -1,4 +1,11 @@
-import type { AkunCalc, AkunSource, AkunType, FormField, FormSection } from '@/composables/useFormStructure'
+import type {
+  AkunCalc,
+  AkunSource,
+  AkunType,
+  FormField,
+  FormPreviewRowType,
+  FormSection,
+} from '@/composables/useFormStructure'
 
 export type FieldType = FormField['type']
 
@@ -22,10 +29,17 @@ export interface ConfigFieldForm {
   type: FieldType
   formula: string
   description: string
+  previewRowType?: FormPreviewRowType
   akunSource: AkunSource
   akunTypes: AkunType[]
   akunCalc: AkunCalc
 }
+
+export const PREVIEW_ROW_TYPE_OPTIONS: Array<{ value: FormPreviewRowType; label: string; desc: string }> = [
+  { value: 'item', label: 'Detail', desc: 'Baris detail biasa' },
+  { value: 'subsection', label: 'Subtotal', desc: 'Baris biru (subsection)' },
+  { value: 'section', label: 'Highlight', desc: 'Baris kuning (section)' },
+]
 
 export const TYPE_OPTIONS: TypeOption[] = [
   { value: 'akun', label: 'Akun', desc: 'Tarik saldo dari akun', icon: '◉' },
@@ -136,6 +150,7 @@ export function defaultFieldForm(): ConfigFieldForm {
     type: 'akun' as FieldType,
     formula: '',
     description: '',
+    previewRowType: undefined,
     akunSource: 'semua_akun_tipe' as AkunSource,
     akunTypes: ['pendapatan'] as AkunType[],
     akunCalc: 'mutasi_bersih' as AkunCalc,

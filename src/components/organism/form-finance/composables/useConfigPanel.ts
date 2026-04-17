@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import type { AkunType, FormField, FormSection, FormStructure } from '@/composables/useFormStructure'
+import type { AkunType, FormField, FormPreviewRowType, FormSection, FormStructure } from '@/composables/useFormStructure'
 import {
   type ConfigFieldForm,
   defaultFieldForm,
@@ -58,6 +58,7 @@ export function useConfigPanel(props: Props, emit: Emits) {
       type: field.type,
       formula: field.formula || '',
       description: field.description || '',
+      previewRowType: field.previewRowType,
       akunSource: field.akunSource || 'semua_akun_tipe',
       akunTypes: field.akunTypes || ['pendapatan'],
       akunCalc: field.akunCalc || 'mutasi_bersih',
@@ -184,6 +185,13 @@ export function useConfigPanel(props: Props, emit: Emits) {
     }
   }
 
+  const onPreviewRowTypeChange = (rowType?: FormPreviewRowType) => {
+    fieldForm.value.previewRowType = rowType
+    if (props.selectedField) {
+      emit('update-field', { previewRowType: rowType })
+    }
+  }
+
   const onAkunCalcChange = () => {
     if (props.selectedField) {
       handleUpdateField('akunCalc')
@@ -236,6 +244,7 @@ export function useConfigPanel(props: Props, emit: Emits) {
     toggleAkunType,
     onTypeClick,
     onNameBlur,
+    onPreviewRowTypeChange,
     onAkunSourceChange,
     onAkunCalcChange,
     getTokenSign,

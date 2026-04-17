@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useFormStructure } from '@/composables/useFormStructure'
 import { useFormStorage } from '@/composables/useFormStorage'
 import { useFormBuilder } from './composables'
 import SectionList from './SectionList.vue'
 import ConfigPanel from './ConfigPanel.vue'
+import RendererPreviewPanel from './parts/form-renderer/RendererPreviewPanel.vue'
 import FormBuilderHeader from './parts/form-builder/FormBuilderHeader.vue'
 import AddSectionForm from './parts/form-builder/AddSectionForm.vue'
 import FormBuilderSaveModal from './parts/form-builder/FormBuilderSaveModal.vue'
@@ -49,6 +51,87 @@ const {
   handleNewForm,
   copySchemaToClipboard,
 } = useFormBuilder({ fb, storage })
+
+const previewSections = computed(() => formStructure.value.sections)
+
+const previewFieldValues = computed<Record<string, string>>(() => {
+  const values: Record<string, string> = {}
+  let runningIndex = 1
+
+  previewSections.value.forEach((section) => {
+    section.fields.forEach((field) => {
+      if (field.type === 'formula' || field.type === 'text') {
+        return
+      }
+
+      const baseValue = runningIndex * 10000000
+      const isExpenseLike = field.akunTypes?.includes('beban') ?? false
+      values[field.id] = String(isExpenseLike ? -baseValue : baseValue)
+      runningIndex += 1
+    })
+  })
+
+  return values
+})
+
+const fieldByCode = computed(() => {
+  const map = new Map<string, { id: string; type: string; formula?: string }>()
+  previewSections.value.forEach((section) => {
+    section.fields.forEach((field) => {
+      map.set(field.code, {
+        id: field.id,
+        type: field.type,
+        formula: field.formula,
+      })
+    })
+  })
+  return map
+})
+
+const toNumber = (value: number | string): number => {
+  const normalized = Number(String(value).replace(/,/g, ''))
+  return Number.isFinite(normalized) ? normalized : 0
+}
+
+const evaluateFormulaForPreview = (formula: string, visited: Set<string>): number => {
+  if (!formula) return 0
+
+  const expression = formula.replace(/\[([^\]]+)\]/g, (_, code: string) => {
+    const normalizedCode = String(code).trim()
+
+    if (visited.has(normalizedCode)) {
+      return '0'
+    }
+
+    const field = fieldByCode.value.get(normalizedCode)
+    if (!field) {
+      return '0'
+    }
+
+    if (field.type === 'formula') {
+      const nextVisited = new Set(visited)
+      nextVisited.add(normalizedCode)
+      return String(evaluateFormulaForPreview(field.formula || '', nextVisited))
+    }
+
+    if (field.type === 'text') {
+      return '0'
+    }
+
+    return String(toNumber(previewFieldValues.value[field.id] || '0'))
+  })
+
+  try {
+    const result = Function('"use strict"; return (' + expression + ')')()
+    return Number.isFinite(result) ? result : 0
+  } catch {
+    return 0
+  }
+}
+
+const calculatePreviewFormula = (formula: string): number | string => {
+  return evaluateFormulaForPreview(formula, new Set())
+}
 </script>
 
 <template>
@@ -98,17 +181,34 @@ const {
       </div>
 
       <div class="flex-1 overflow-y-auto p-6">
-        <ConfigPanel
-          :selected-section="selectedSection"
-          :selected-field="selectedField"
-          :adding-field-for-section="addingFieldForSection"
-          :form-structure="formStructure"
-          @add-field="handleAddField"
-          @update-field="handleUpdateField"
-          @update-section="handleUpdateSection"
-          @delete-field="handleDeleteField"
-          @cancel-add="addingFieldForSection = null"
-        />
+        <div class="grid gap-6 xl:grid-cols-2">
+          <div class="rounded-xl border border-slate-200 bg-white p-4">
+            <ConfigPanel
+              :selected-section="selectedSection"
+              :selected-field="selectedField"
+              :adding-field-for-section="addingFieldForSection"
+              :form-structure="formStructure"
+              @add-field="handleAddField"
+              @update-field="handleUpdateField"
+              @update-section="handleUpdateSection"
+              @delete-field="handleDeleteField"
+              @cancel-add="addingFieldForSection = null"
+            />
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-sm font-semibold text-slate-900">Live Preview Akuntansi</h3>
+              <p class="text-xs text-slate-500">Dummy data otomatis</p>
+            </div>
+
+            <RendererPreviewPanel
+              :selected-sections="previewSections"
+              :selected-field-values="previewFieldValues"
+              :calculate-formula="calculatePreviewFormula"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
