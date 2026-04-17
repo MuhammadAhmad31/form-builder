@@ -9,3 +9,9 @@ export { default as FormBuilderLoadModal } from './parts/form-builder/FormBuilde
 export { default as FormBuilderSchemaModal } from './parts/form-builder/FormBuilderSchemaModal.vue'
 export { default as RendererFormPanel } from './parts/form-renderer/RendererFormPanel.vue'
 export { default as RendererPreviewPanel } from './parts/form-renderer/RendererPreviewPanel.vue'
+export type {
+	RendererPreviewFieldPayload,
+	RendererPreviewSectionPayload,
+	RendererSubmitPayload,
+	RendererSubmitHandler,
+} from './types'

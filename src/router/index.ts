@@ -11,32 +11,22 @@ const router = createRouter({
     {
       path: "/builder",
       name: "form-builder",
-      component: () => import("@/pages/FormBuilderPage.vue"),
+      component: () => import("@/pages/v2/FormBuilderPage.vue"),
     },
     {
       path: "/renderer",
       name: "form-renderer",
-      component: () => import("@/pages/FormRendererPage.vue"),
-    },
-    {
-      path: "/codeparl",
-      name: "codeparl-form",
-      component: () => import("@/pages/CodeparlFormBuilder.vue"),
-    },
-    {
-      path: "/codeparl/render",
-      name: "codeparl-form-renderer",
-      component: () => import("@/pages/CodeparlFormRendererPage.vue"),
+      component: () => import("@/pages/v2/FormRendererPage.vue"),
     },
     {
       path: "/form-builder-simple",
       name: "form-builder-simple",
-      component: () => import("@/components/organism/form-finance/FormBuilder.vue"),
+      component: () => import("@/pages/finance/FormBuilderPage.vue"),
     },
     {
       path: "/form-renderer-simple",
       name: "form-renderer-simple",
-      component: () => import("@/components/organism/form-finance/FormRenderer.vue"),
+      component: () => import("@/pages/finance/FormRendererPage.vue"),
     },
   ],
 });
