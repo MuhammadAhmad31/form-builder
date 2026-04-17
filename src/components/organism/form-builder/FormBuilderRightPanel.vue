@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BuilderField, FieldOption, FieldSpacing, LabelPlacement, OptionLayout, SelectionMode } from './types'
+import type { BuilderField, BuilderSection, FieldOption, FieldSpacing, LabelPlacement, OptionLayout, SelectionMode } from './types'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils'
 
 interface Props {
+  selectedSection: BuilderSection | null
   selectedField: BuilderField | null
   labelPlacementItems: Array<{ label: string; value: LabelPlacement }>
 }
@@ -37,6 +38,8 @@ const checkboxModeItems: Array<{ label: string; value: SelectionMode }> = [
 ]
 
 const emit = defineEmits<{
+  'update-section-title': [sectionId: string, title: string]
+  'update-section-visibility': [sectionId: string, showTitle: boolean]
   'update-field': [key: keyof BuilderField, value: any]
   'update-spacing': [side: keyof FieldSpacing, value: string | number]
   'update-grid-value': [key: 'x' | 'y' | 'w' | 'h', value: string | number]
@@ -44,6 +47,7 @@ const emit = defineEmits<{
   'update-option': [optionId: string, key: keyof FieldOption, value: string]
   'remove-option': [optionId: string]
   'remove-selected': []
+  'remove-section': []
 }>()
 </script>
 
@@ -52,13 +56,43 @@ const emit = defineEmits<{
     <CardHeader class="space-y-2">
       <CardTitle>Inspector</CardTitle>
       <CardDescription>
-        {{ selectedField ? 'Ubah properti field yang dipilih' : 'Pilih field untuk edit' }}
+        {{ selectedField ? 'Ubah properti field yang dipilih' : selectedSection ? 'Ubah properti section' : 'Pilih field untuk edit' }}
       </CardDescription>
     </CardHeader>
 
-    <CardContent v-if="selectedField" class="min-h-0 overflow-y-auto space-y-6">
+    <CardContent v-if="selectedSection || selectedField" class="min-h-0 overflow-y-auto space-y-6">
+      <!-- Section Properties -->
+      <div v-if="selectedSection" class="grid gap-4 rounded-2xl border border-border bg-card p-4">
+        <div class="grid gap-2">
+          <Label for="section-title">Section Name</Label>
+          <Input
+            id="section-title"
+            :model-value="selectedSection.title"
+            @update:model-value="emit('update-section-title', selectedSection.id, String($event))"
+          />
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium">Show Title</span>
+          <button
+            type="button"
+            :class="cn(
+              'rounded-lg border px-3 py-2 text-sm transition',
+              selectedSection.showTitle ? 'border-foreground bg-foreground text-background' : 'border-border bg-background',
+            )"
+            @click="emit('update-section-visibility', selectedSection.id, !selectedSection.showTitle)"
+          >
+            {{ selectedSection.showTitle ? 'Yes' : 'No' }}
+          </button>
+        </div>
+
+        <Button type="button" variant="destructive" class="w-full" @click="emit('remove-section')">
+          Delete Section
+        </Button>
+      </div>
+
       <!-- Basic Properties -->
-      <div class="grid gap-4 rounded-2xl border border-border bg-card p-4">
+      <div v-if="selectedField" class="grid gap-4 rounded-2xl border border-border bg-card p-4">
         <div class="grid gap-2">
           <Label for="field-label">Label</Label>
           <Input
@@ -102,7 +136,7 @@ const emit = defineEmits<{
       </div>
 
       <!-- Toggles -->
-      <div class="grid gap-2 rounded-2xl border border-border bg-card p-4">
+      <div v-if="selectedField" class="grid gap-2 rounded-2xl border border-border bg-card p-4">
         <div class="flex items-center justify-between">
           <span class="text-sm font-medium">Required</span>
           <button
@@ -133,7 +167,7 @@ const emit = defineEmits<{
       </div>
 
       <!-- Grid Position -->
-      <div class="grid gap-4 rounded-2xl border border-border bg-card p-4">
+      <div v-if="selectedField" class="grid gap-4 rounded-2xl border border-border bg-card p-4">
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-semibold">Grid Position</h3>
           <span class="text-xs text-muted-foreground">{{ selectedField.w }}/12 columns</span>
@@ -176,7 +210,7 @@ const emit = defineEmits<{
       </div>
 
       <!-- Spacing -->
-      <div class="grid gap-4 rounded-2xl border border-border bg-card p-4">
+      <div v-if="selectedField" class="grid gap-4 rounded-2xl border border-border bg-card p-4">
         <h3 class="text-sm font-semibold">Spacing (px)</h3>
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -215,7 +249,7 @@ const emit = defineEmits<{
       </div>
 
       <!-- Choice Options -->
-      <div v-if="['select', 'checkbox', 'radio'].includes(selectedField.type)" class="grid gap-4 rounded-2xl border border-border bg-card p-4">
+      <div v-if="selectedField && ['select', 'checkbox', 'radio'].includes(selectedField.type)" class="grid gap-4 rounded-2xl border border-border bg-card p-4">
         <div class="flex items-center justify-between">
           <div>
             <h3 class="text-sm font-semibold">Field Options</h3>
@@ -320,7 +354,7 @@ const emit = defineEmits<{
       </div>
 
       <!-- Delete Button -->
-      <Button type="button" variant="destructive" class="w-full" @click="emit('remove-selected')">
+      <Button v-if="selectedField" type="button" variant="destructive" class="w-full" @click="emit('remove-selected')">
         Delete Field
       </Button>
     </CardContent>

@@ -1,3 +1,4 @@
+<!-- FormBuilder.vue -->
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useFormStructure } from '@/composables/useFormStructure'
@@ -246,6 +247,7 @@ function copySchemaToClipboard() {
           :selected-section="selectedSection"
           :selected-field="selectedField"
           :adding-field-for-section="addingFieldForSection"
+          :form-structure="formStructure"
           @add-field="handleAddField"
           @update-field="handleUpdateField"
           @update-section="handleUpdateSection"

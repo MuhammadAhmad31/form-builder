@@ -3,14 +3,23 @@ import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import type { BuilderField } from '../types'
 
-const props = defineProps<{
+interface Props {
   field: BuilderField
-}>()
+  modelValue?: string | string[]
+  error?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: undefined,
+})
 
 const emit = defineEmits<{
   'update:value': [value: string | string[]]
+  'update:modelValue': [value: string | string[]]
   focus: []
 }>()
+
+const currentValue = () => props.modelValue !== undefined ? props.modelValue : props.field.value
 
 const stackClass = computed(() =>
   props.field.optionLayout === 'horizontal'
@@ -21,7 +30,7 @@ const stackClass = computed(() =>
 const singleOption = computed(() => props.field.options[0] ?? null)
 
 function isChecked(optionValue: string) {
-  const { value } = props.field
+  const value = currentValue()
   return Array.isArray(value) ? value.includes(optionValue) : value === optionValue
 }
 
@@ -29,19 +38,21 @@ function toggleValue(optionValue: string, checked: boolean) {
   emit('focus')
 
   if (props.field.selectionMode === 'single') {
-    emit('update:value', checked ? optionValue : '')
+    const newValue = checked ? optionValue : ''
+    emit('update:value', newValue)
+    emit('update:modelValue', newValue)
     return
   }
 
-  const current = Array.isArray(props.field.value) ? [...props.field.value] : []
-  emit(
-    'update:value',
-    checked
-      ? current.includes(optionValue)
-        ? current
-        : [...current, optionValue]
-      : current.filter((value) => value !== optionValue),
-  )
+  const current = Array.isArray(currentValue()) ? [...currentValue() as string[]] : []
+  const newValue = checked
+    ? current.includes(optionValue)
+      ? current
+      : [...current, optionValue]
+    : current.filter((value) => value !== optionValue)
+
+  emit('update:value', newValue)
+  emit('update:modelValue', newValue)
 }
 </script>
 

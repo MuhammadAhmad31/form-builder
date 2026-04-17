@@ -26,7 +26,11 @@ const { canvasFieldStyle, fieldContentClass, inputWrapperClass, labelClass } = u
         selected ? 'rounded-sm outline-2 outline-offset-2 outline-foreground/40' : '',
       )
     "
+    :draggable="true"
+    :data-field-id="field.id"
+    :data-section-id="field.sectionId"
     @click.stop="emit('select')"
+    @dragstart="$event.dataTransfer!.effectAllowed = 'move'; $event.dataTransfer!.setData('fieldId', field.id); $event.dataTransfer!.setData('sectionId', field.sectionId)"
   >
     <button
       type="button"

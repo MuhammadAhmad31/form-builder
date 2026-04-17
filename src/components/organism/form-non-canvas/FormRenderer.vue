@@ -76,6 +76,54 @@ const toggleCheckbox = (fieldId: string, index: number, checked: boolean) => {
 const getCheckedCount = (fieldId: string) => {
   return (selectedFieldCheckboxes.value[fieldId] || []).filter(Boolean).length;
 };
+
+const calculateFormula = (formula: string): number | string => {
+  if (!formula) return 'N/A';
+
+  // Create mappings from formStructure
+  const codeToFieldId: Record<string, string> = {};
+  const codeToField: Record<string, any> = {};
+  if (selectedForm.value) {
+    for (const section of selectedForm.value.formStructure.sections) {
+      for (const field of section.fields) {
+        codeToFieldId[field.code] = field.id;
+        codeToField[field.code] = field;
+      }
+    }
+  }
+
+  // Replace [code] with actual values
+  let expression = formula;
+  const codeMatches = expression.match(/\[([^\]]+)\]/g) || [];
+
+  for (const match of codeMatches) {
+    const code = match.slice(1, -1); // Remove [ and ]
+    const field = codeToField[code];
+    let value = '0';
+
+    if (field) {
+      if (field.type === 'formula') {
+        // For formula fields, recursively calculate
+        const calculatedValue = calculateFormula(field.formula || '');
+        value = String(calculatedValue);
+      } else {
+        // For other fields, get from selectedFieldValues
+        value = selectedFieldValues.value[field.id] || '0';
+      }
+    }
+
+    const numValue = Number.isNaN(Number(value)) ? '0' : value;
+    expression = expression.replace(match, numValue);
+  }
+
+  // Evaluate the expression
+  try {
+    const result = Function('"use strict"; return (' + expression + ')')();
+    return Number.isNaN(result) ? 'N/A' : result;
+  } catch {
+    return 'N/A';
+  }
+};
 </script>
 <template>
   <div class="p-4">
@@ -110,26 +158,26 @@ const getCheckedCount = (fieldId: string) => {
       <div class="grid grid-cols-2 gap-4">
           <div v-if="selectedSections.length > 0" class="mt-4 space-y-4">
             <div
-              v-for="section in selectedSections.filter((section) =>
-                section.fields.some((field) => field.type !== 'formula'),
+              v-for="section in selectedSections.filter((s) =>
+                s.fields.some((f) => f.type === 'akun')
               )"
               :key="section.id"
               class="space-y-2"
             >
               <p class="text-sm font-medium">{{ section.name }}</p>
-    
+
               <div
-                v-for="field in section.fields"
+                v-for="field in section.fields.filter((f) => f.type === 'akun')"
                 :key="field.id"
                 class="space-y-2 p-3"
               >
-                <div v-if="field.type !== 'formula'" class="grid grid-cols-3 items-center gap-3">
+                <div class="grid grid-cols-3 items-center gap-3">
                   <p class="text-sm text-muted-foreground ml-4">
                     {{ field.name }}
                   </p>
 
-                  <p>
-                    source: {{ field.akunSource }}
+                  <p class="text-xs">
+                    {{ field.akunSource }}
                   </p>
                   <Select
                     :model-value="selectedFieldValues[field.id]"
@@ -152,7 +200,7 @@ const getCheckedCount = (fieldId: string) => {
                 </div>
 
                 <div
-                  v-if="field.type !== 'formula' && getCheckboxCount(field.id) > 0"
+                  v-if="getCheckboxCount(field.id) > 0"
                   class="ml-4 flex flex-wrap gap-3"
                 >
                   <label
@@ -187,8 +235,8 @@ const getCheckedCount = (fieldId: string) => {
                     <p v-if="field.type !== 'formula'">
                       {{ field.name }}: {{ selectedFieldValues[field.id] || 'N/A' }}
                     </p>
-                    <p v-else>
-                      {{ field.name }}: {{ field.formula }}
+                    <p v-else class="font-semibold text-emerald-700">
+                      {{ field.name }}: {{ calculateFormula(field.formula || '') }}
                     </p>
                   </div>
                 </div>

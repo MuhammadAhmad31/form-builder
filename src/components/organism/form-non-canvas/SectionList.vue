@@ -1,3 +1,4 @@
+<!-- SectionList.vue -->
 <script setup lang="ts">
 import type { FormStructure, FormField } from '@/composables/useFormStructure'
 

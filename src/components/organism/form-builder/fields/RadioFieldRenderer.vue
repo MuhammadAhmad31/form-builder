@@ -3,12 +3,19 @@ import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import type { BuilderField } from '../types'
 
-const props = defineProps<{
+interface Props {
   field: BuilderField
-}>()
+  modelValue?: string | string[]
+  error?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: undefined,
+})
 
 const emit = defineEmits<{
   'update:value': [value: string]
+  'update:modelValue': [value: string]
   focus: []
 }>()
 
@@ -18,9 +25,15 @@ const stackClass = computed(() =>
     : 'flex-col gap-2',
 )
 
+function getCurrentValue() {
+  const val = props.modelValue !== undefined ? props.modelValue : props.field.value
+  return Array.isArray(val) ? '' : val
+}
+
 function setValue(optionValue: string) {
   emit('focus')
   emit('update:value', optionValue)
+  emit('update:modelValue', optionValue)
 }
 </script>
 
@@ -35,7 +48,7 @@ function setValue(optionValue: string) {
         type="radio"
         :name="field.name"
         class="h-4 w-4 border-input"
-        :checked="field.value === option.value"
+        :checked="getCurrentValue() === option.value"
         :disabled="field.readOnly"
         @change="setValue(option.value)"
       />

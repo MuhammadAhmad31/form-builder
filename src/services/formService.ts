@@ -3,6 +3,7 @@ import type {
   LabelPlacement,
   OptionLayout,
   SelectionMode,
+  SectionDirection,
 } from "@/components/organism/form-builder/types";
 
 export interface FieldOption {
@@ -19,6 +20,7 @@ export interface FieldSpacing {
 
 export interface FormField {
   id: string;
+  sectionId?: string;
   type: FieldType;
   label: string;
   labelPlacement: LabelPlacement;
@@ -40,8 +42,17 @@ export interface FormField {
   h: number;
 }
 
+export interface FormSection {
+  id: string;
+  title: string;
+  showTitle?: boolean;
+  fields: FormField[];
+}
+
 export interface FormSchema {
   fields: FormField[];
+  sections?: FormSection[];
+  sectionDirection?: SectionDirection;
 }
 
 // API Service

@@ -18,26 +18,39 @@ import {
 import { cn } from '@/lib/utils'
 import type { BuilderField } from '../types'
 
-const props = defineProps<{
+interface Props {
   field: BuilderField
-}>()
+  modelValue?: string | number | string[]
+  error?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: undefined,
+})
 
 const emit = defineEmits<{
   'update:value': [value: string]
+  'update:modelValue': [value: string]
   focus: []
 }>()
 
-const fieldValue = computed(() => (Array.isArray(props.field.value) ? '' : props.field.value))
+const fieldValue = computed(() => {
+  const val = props.modelValue !== undefined ? props.modelValue : props.field.value
+  return Array.isArray(val) ? '' : String(val)
+})
 const dateValue = computed(() => parseStoredDate(fieldValue.value))
 const dateLabel = computed(() => formatStoredDate(fieldValue.value))
 
 function handleDateChange(value: DateValue | undefined) {
+  const newValue = toStoredDate(value)
   emit('focus')
-  emit('update:value', toStoredDate(value))
+  emit('update:value', newValue)
+  emit('update:modelValue', newValue)
 }
 
 function clearValue() {
   emit('update:value', '')
+  emit('update:modelValue', '')
 }
 </script>
 
@@ -48,10 +61,12 @@ function clearValue() {
         <Button
           type="button"
           variant="outline"
+          :disabled="field.readOnly"
           :class="
             cn(
               'w-full justify-start text-left font-normal',
-              !field.value && 'text-muted-foreground',
+              !fieldValue && 'text-muted-foreground',
+              error ? 'border-red-500' : '',
               field.readOnly ? 'bg-gray-100 text-gray-500' : '',
             )
           "
@@ -72,7 +87,7 @@ function clearValue() {
       </PopoverContent>
     </Popover>
     <button
-      v-if="field.clearable && field.value"
+      v-if="field.clearable && fieldValue"
       type="button"
       class="inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-2 hover:bg-accent"
       @click="clearValue"
