@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { FormBuilder } from '@/components/organism/form-builder'
+import { FormBuilder } from '@/components/organism/form-v2/form-builder'
 import { useFormStore } from '@/composables/useFormStore'
 import {
   // formService,

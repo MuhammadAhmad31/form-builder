@@ -54,7 +54,7 @@ const emit = defineEmits<{
           <div
             v-for="field in section.fields.filter((field) => field.type === 'akun')"
             :key="field.id"
-            class="space-y-2 p-3"
+            class="space-y-2 p-2"
           >
             <div class="grid grid-cols-3 items-center gap-3">
               <p class="ml-4 text-sm text-muted-foreground">{{ field.name }}</p>

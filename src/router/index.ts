@@ -31,12 +31,12 @@ const router = createRouter({
     {
       path: "/form-builder-simple",
       name: "form-builder-simple",
-      component: () => import("@/components/organism/form-non-canvas/FormBuilder.vue"),
+      component: () => import("@/components/organism/form-finance/FormBuilder.vue"),
     },
     {
       path: "/form-renderer-simple",
       name: "form-renderer-simple",
-      component: () => import("@/components/organism/form-non-canvas/FormRenderer.vue"),
+      component: () => import("@/components/organism/form-finance/FormRenderer.vue"),
     },
   ],
 });

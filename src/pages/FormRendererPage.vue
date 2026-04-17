@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { FormRenderer } from '@/components/organism/form-renderer'
+import { FormRenderer } from '@/components/organism/form-v2/form-renderer'
 import { useFormStore } from '@/composables/useFormStore'
 import type { FormSchema } from '@/services/formService'
 

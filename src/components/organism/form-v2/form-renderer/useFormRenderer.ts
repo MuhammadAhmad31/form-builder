@@ -2,7 +2,7 @@ import { ref, reactive, computed } from "vue";
 import type { FormSchema, FormField } from "@/services/formService";
 import { formService } from "@/services/formService";
 import type { Layout } from "grid-layout-plus";
-import type { SectionDirection } from "@/components/organism/form-builder/types";
+import type { SectionDirection } from "@/components/organism/form-v2/form-builder/types";
 
 export interface FormRendererProps {
   schema: FormSchema;

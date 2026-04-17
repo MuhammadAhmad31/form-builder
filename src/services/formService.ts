@@ -4,7 +4,7 @@ import type {
   OptionLayout,
   SelectionMode,
   SectionDirection,
-} from "@/components/organism/form-builder/types";
+} from "@/components/organism/form-v2/form-builder/types";
 
 export interface FieldOption {
   label: string;
