@@ -70,6 +70,7 @@ const handleCalcChange = (event: Event) => {
   emit('update-calc', value)
 }
 
+
 const handlePreviewRowTypeChange = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value
   if (!value) {
