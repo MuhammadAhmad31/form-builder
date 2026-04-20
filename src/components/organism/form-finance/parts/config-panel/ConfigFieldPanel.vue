@@ -185,7 +185,7 @@ const handlePreviewRowTypeChange = (event: Event) => {
       <p class="text-[11px] text-slate-500">Auto: formula jadi biru, selain formula jadi detail biasa.</p>
     </div>
 
-    <template v-if="fieldForm.type === 'akun'">
+    <template v-if="fieldForm.type === 'account'">
       <div class="flex flex-col gap-1.5">
         <label class="text-xs font-semibold text-slate-600">Cara mengambil akun</label>
         <div class="relative">

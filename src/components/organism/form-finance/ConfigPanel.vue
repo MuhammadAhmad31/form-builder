@@ -47,6 +47,12 @@ const updateSectionName = (name: string) => {
   sectionForm.value.name = name
   handleUpdateSection()
 }
+
+const handleHideLabel = (hideLabel: boolean) => {
+  if (props.selectedSection) {
+    emit('update-section', { hideLabel })
+  }
+}
 </script>
 
 <template>
@@ -69,6 +75,7 @@ const updateSectionName = (name: string) => {
       :section="selectedSection"
       :section-name="sectionForm.name"
       @update-name="updateSectionName"
+      @hide-label="handleHideLabel"
     />
 
     <ConfigFieldPanel

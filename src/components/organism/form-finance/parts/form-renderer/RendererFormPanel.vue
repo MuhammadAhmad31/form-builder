@@ -45,14 +45,14 @@ const emit = defineEmits<{
     <div class="mt-6 grid grid-cols-2 gap-4">
       <div v-if="selectedSections.length > 0" class="mt-4 space-y-4">
         <div
-          v-for="section in selectedSections.filter((section) => section.fields.some((field) => field.type === 'akun'))"
+          v-for="section in selectedSections.filter((section) => section.fields.some((field) => field.type === 'account'))"
           :key="section.id"
           class="space-y-2"
         >
           <p class="text-sm font-medium">{{ section.name }}</p>
 
           <div
-            v-for="field in section.fields.filter((field) => field.type === 'akun')"
+            v-for="field in section.fields.filter((field) => field.type === 'account')"
             :key="field.id"
             class="space-y-2 p-2"
           >

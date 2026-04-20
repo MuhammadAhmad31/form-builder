@@ -60,7 +60,7 @@ const previewFieldValues = computed<Record<string, string>>(() => {
 
   previewSections.value.forEach((section) => {
     section.fields.forEach((field) => {
-      if (field.type === 'formula' || field.type === 'text') {
+      if (field.type === 'formula') {
         return
       }
 

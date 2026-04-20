@@ -1,16 +1,24 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { FormSection } from '@/composables/useFormStructure'
+import { ToggleSwitch } from '@/components/ui/toggle-switch'
 
 interface Props {
   section: FormSection
   sectionName: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update-name': [name: string]
+  'hide-label': [hideLabel: boolean]
 }>()
+
+const hideLabel = computed({
+  get: () => props.section.hideLabel ?? false,
+  set: (value: boolean) => emit('hide-label', value),
+})
 </script>
 
 <template>
@@ -34,6 +42,11 @@ const emit = defineEmits<{
         @input="emit('update-name', ($event.target as HTMLInputElement).value)"
       />
     </div>
+
+    <ToggleSwitch
+      v-model="hideLabel"
+      label="Sembunyikan label section"
+    />
 
     <div class="flex items-start gap-2 rounded-lg border border-blue-300 bg-blue-50 p-3 text-xs text-blue-700">
       <svg class="mt-0.5 shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

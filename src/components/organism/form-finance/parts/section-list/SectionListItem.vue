@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FormField, FormSection } from '@/composables/useFormStructure'
+import type { FieldType } from '../../utils/configPanel';
 
 interface Props {
   section: FormSection
@@ -19,14 +20,14 @@ const emit = defineEmits<{
 }>()
 
 function getTypeMeta(type: FormField['type']) {
-  const map: Record<string, { label: string; dot: string; badge: string }> = {
-    akun: { label: 'akun', dot: 'bg-emerald-600', badge: 'bg-emerald-50 text-emerald-700 border border-emerald-300' },
-    formula: { label: 'formula', dot: 'bg-violet-600', badge: 'bg-violet-50 text-violet-700 border border-violet-300' },
-    text: { label: 'teks', dot: 'bg-blue-600', badge: 'bg-blue-50 text-blue-700 border border-blue-300' },
-    number: { label: 'angka', dot: 'bg-orange-600', badge: 'bg-orange-50 text-orange-700 border border-orange-300' },
+  const map: Record<FieldType, { label: string; dot: string; badge: string }> = {
+    account: { label: 'Akun', dot: 'bg-emerald-600', badge: 'bg-emerald-50 text-emerald-700 border border-emerald-300' },
+    formula: { label: 'Formula', dot: 'bg-violet-600', badge: 'bg-violet-50 text-violet-700 border border-violet-300' },
+    category_account: { label: 'Kategori Akun', dot: 'bg-blue-600', badge: 'bg-blue-50 text-blue-700 border border-blue-300' },
+    reference: { label: 'Referensi', dot: 'bg-orange-600', badge: 'bg-orange-50 text-orange-700 border border-orange-300' },
   }
 
-  return map[type] ?? map.text
+  return map[type]
 }
 </script>
 

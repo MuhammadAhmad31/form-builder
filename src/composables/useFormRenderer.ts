@@ -11,14 +11,14 @@ export function useFormRenderer(formStructure: FormStructure) {
     if (!formStructure?.sections) return
     formStructure.sections.forEach((section) => {
       section.fields.forEach((field) => {
-        if (field.type === 'akun') {
+        if (field.type === 'account') {
           data[field.code] = ''
         } else if (field.type === 'formula') {
           data[field.code] = 0
-        } else if (field.type === 'number') {
+        } else if (field.type === 'category_account') {
           data[field.code] = 0
-        } else if (field.type === 'text') {
-          data[field.code] = ''
+        } else if (field.type === 'reference') {
+          data[field.code] = 0
         }
       })
     })
@@ -80,7 +80,7 @@ export function useFormRenderer(formStructure: FormStructure) {
     if (formStructure?.sections) {
       formStructure.sections.forEach((section) => {
         section.fields.forEach((field) => {
-          if (field.type === 'akun' && !formData.value[field.code]) {
+          if (field.type === 'account' && !formData.value[field.code]) {
             formErrors.value[field.code] = `${field.name} harus diisi`
             isValid = false
           }

@@ -42,10 +42,10 @@ export const PREVIEW_ROW_TYPE_OPTIONS: Array<{ value: FormPreviewRowType; label:
 ]
 
 export const TYPE_OPTIONS: TypeOption[] = [
-  { value: 'akun', label: 'Akun', desc: 'Tarik saldo dari akun', icon: '◉' },
+  { value: 'account', label: 'Akun', desc: 'Tarik saldo dari akun', icon: '◉' },
+  { value: 'category_account', label: 'Kategori Akun', desc: 'Kelompokkan akun berdasarkan kategori', icon: 'K' },
   { value: 'formula', label: 'Formula', desc: 'Hitung dari baris lain', icon: 'ƒ' },
-  { value: 'number', label: 'Angka', desc: 'Nilai manual / referensi', icon: '↗' },
-  { value: 'text', label: 'Teks', desc: 'Label atau pemisah', icon: 'T' },
+  { value: 'reference', label: 'Referensi', desc: 'Nilai manual / referensi', icon: '↗' }
 ]
 
 export const AKUN_TYPE_OPTIONS: { value: AkunType; label: string }[] = [
@@ -118,28 +118,28 @@ export function tokensToFormula(tokens: FormulaToken[]): string {
 
 export function typeIconClass(type: FieldType): string {
   return {
-    akun: 'bg-emerald-50 text-emerald-700',
+    account: 'bg-emerald-50 text-emerald-700',
     formula: 'bg-violet-50 text-violet-700',
-    number: 'bg-orange-50 text-orange-700',
-    text: 'bg-slate-100 text-slate-600',
+    category_account: 'bg-blue-50 text-blue-700',
+    reference: 'bg-orange-50 text-orange-700',
   }[type] ?? 'bg-slate-100 text-slate-600'
 }
 
 export function typeLabelText(type: FieldType): string {
   return {
-    akun: 'BARIS AKUN',
+    account: 'BARIS AKUN',
     formula: 'BARIS FORMULA',
-    number: 'BARIS ANGKA',
-    text: 'BARIS TEKS',
+    category_account: 'BARIS KATEGORI AKUN',
+    reference: 'BARIS REFERENSI',
   }[type]
 }
 
 export function fieldTypeDot(type: FieldType): string {
   return {
-    akun: 'bg-emerald-500',
+    account: 'bg-emerald-500',
     formula: 'bg-violet-500',
-    number: 'bg-orange-500',
-    text: 'bg-slate-400',
+    category_account: 'bg-blue-500',
+    reference: 'bg-orange-500',
   }[type] ?? 'bg-slate-400'
 }
 

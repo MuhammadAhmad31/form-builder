@@ -54,18 +54,20 @@ const reportTableData = computed<Report>(() => {
   const items: Report["items"] = [];
 
   props.selectedSections.forEach((section) => {
-    items.push({
-      rowNumber,
-      rowText: section.name,
-      columnNumber: 1,
-      columnText: null,
-      type: "section",
-      amount: "",
-      notation: null,
-      categoryId: section.id,
-      categoryName: section.name,
-    });
-    rowNumber += 1;
+    if (!section.hideLabel) {
+      items.push({
+        rowNumber,
+        rowText: section.name,
+        columnNumber: 1,
+        columnText: null,
+        type: "section",
+        amount: "",
+        notation: null,
+        categoryId: section.id,
+        categoryName: section.name,
+      });
+      rowNumber += 1;
+    }
 
     orderFieldsForPreview(section).forEach((field) => {
       const rawValue = buildFieldValue(field.id, field.type, field.formula);
@@ -77,7 +79,7 @@ const reportTableData = computed<Report>(() => {
         rowNumber,
         rowText: field.name,
         columnNumber: 1,
-        columnText: "Nilai",
+        columnText: null,
         type: rowType,
         amount,
         notation: Number.isFinite(numericValue) && numericValue < 0 ? "negative" : "positive",

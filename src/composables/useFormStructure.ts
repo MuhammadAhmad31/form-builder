@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 
-export type FieldType = 'akun' | 'formula' | 'text' | 'number'
+export type FieldType = 'account' | 'formula' | 'category_account' | 'reference'
 export type FormPreviewRowType = 'item' | 'subsection' | 'section'
 export type AkunType = 'pendapatan' | 'beban' | 'aset' | 'kewajiban' | 'ekuitas'
 export type AkunSource = 'semua_akun_tipe' | 'akun_spesifik' | 'semua_akun'
@@ -24,6 +24,7 @@ export interface FormSection {
   name: string
   fields: FormField[]
   collapsed?: boolean
+  hideLabel?: boolean
 }
 
 export interface FormStructure {
