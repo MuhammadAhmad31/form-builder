@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { AkunType, FormField, FormPreviewRowType, FormSection } from '@/composables/useFormStructure'
 import {
-  TYPE_OPTIONS,
   typeIconClass,
   typeLabelText,
   type FormulaToken,
 } from '../../utils/configPanel'
-import AccountFieldConfig from './AccountFieldConfig.vue'
-import FormulaFieldConfig from './FormulaFieldConfig.vue'
-import NormalFieldConfig from './NormalFieldConfig.vue'
+import GeneralFieldConfig from './tabs/GeneralFieldConfig.vue'
+import DataSourceFieldConfig from './tabs/DataSourceFieldConfig.vue'
+import DisplayFieldConfig from './tabs/DisplayFieldConfig.vue'
 
 interface Props {
   selectedField: FormField | null
@@ -49,18 +48,69 @@ const emit = defineEmits<{
   'cancel-add': []
 }>()
 
+const activeTab = ref<'general' | 'source' | 'display'>('general')
+
 const getSelectedFieldIcon = (field: FormField | null) => {
   if (!field) return '+'
-  return TYPE_OPTIONS.find(option => option.value === field.type)?.icon ?? '+'
+  const icons: Record<string, string> = {
+    normal: 'N',
+    account: 'A',
+    formula: 'Σ',
+    category: '☰',
+  }
+  return icons[field.type] || '+'
 }
 
 const selectedFieldIcon = computed(() => {
   return getSelectedFieldIcon(props.selectedField)
 })
+
+const tabItems = [
+  { id: 'general', label: 'General' },
+  { id: 'source', label: 'Sumber Data' },
+  { id: 'display', label: 'Tampilan' },
+]
+
+// Validation function untuk menentukan apakah field form valid untuk ditambahkan
+const getFieldValidationErrors = () => {
+  const errors: string[] = []
+
+  if (!props.fieldForm.name?.trim()) {
+    errors.push('label_baris')
+  }
+
+  if (!props.fieldForm.code?.trim()) {
+    errors.push('kode_baris')
+  }
+
+  if (!props.fieldForm.type) {
+    errors.push('tipe_sumber_data')
+  }
+
+  return errors
+}
+
+const isFieldFormValid = computed(() => {
+  return getFieldValidationErrors().length === 0
+})
+
+const getValidationMessage = () => {
+  const errors = getFieldValidationErrors()
+  if (errors.length === 0) return ''
+
+  const errorMessages: Record<string, string> = {
+    label_baris: 'Isi label baris',
+    kode_baris: 'Kode baris otomatis dari label',
+    tipe_sumber_data: 'Pilih tipe sumber data di tab "Sumber Data"',
+  }
+
+  return errors.map(e => errorMessages[e]).join(' • ')
+}
 </script>
 
 <template>
   <div class="flex flex-col gap-5">
+    <!-- Header -->
     <div class="flex items-start justify-between gap-3 border-b border-slate-200 pb-4">
       <div class="flex items-center gap-3">
         <div
@@ -88,103 +138,91 @@ const selectedFieldIcon = computed(() => {
       </button>
     </div>
 
-    <div class="flex flex-col gap-1.5">
-      <label class="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-        Label baris
-        <span class="font-normal text-slate-500">tampil di laporan</span>
-      </label>
-      <input
-        :value="fieldForm.name"
-        type="text"
-        placeholder="contoh: Pendapatan jasa"
-        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-[15px] font-medium text-slate-900 outline-none transition-colors focus:border-emerald-500 placeholder:text-slate-500"
-        @input="emit('update-name', ($event.target as HTMLInputElement).value)"
-      />
-      <p class="text-[11px] text-slate-500">Nama ini akan muncul sebagai judul baris di laporan akhir</p>
+    <!-- Tabs Navigation -->
+    <div class="flex gap-2 border-b border-slate-200">
+      <button
+        v-for="tab in tabItems"
+        :key="tab.id"
+        :class="[
+          'px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-[2px]',
+          activeTab === tab.id
+            ? 'border-emerald-500 text-emerald-600'
+            : 'border-transparent text-slate-600 hover:text-slate-900'
+        ]"
+        @click="activeTab = tab.id as any"
+      >
+        {{ tab.label }}
+      </button>
     </div>
 
-    <div class="flex flex-col gap-1.5">
-      <label class="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-        Kode baris
-        <span class="font-normal text-slate-500">auto dari label</span>
-      </label>
-      <input
-        :value="fieldForm.code"
-        type="text"
-        readonly
-        class="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 font-mono text-xs text-slate-500 outline-none"
-      />
-      <p class="text-[11px] text-slate-500">
-        Kode otomatis dibuat dari label baris. Digunakan di formula baris lain, contoh: [total_pendapatan] - [total_beban]
-      </p>
-    </div>
+    <!-- Tab Content -->
+    <div class="min-h-96">
+      <!-- Tab: General -->
+      <div v-show="activeTab === 'general'">
+        <GeneralFieldConfig
+          :field-form="fieldForm"
+          @update-name="emit('update-name', $event)"
+          @update-description="emit('update-description', $event)"
+        />
+      </div>
 
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-semibold text-slate-600">Tipe baris</label>
-      <div class="grid grid-cols-2 gap-2">
-        <button
-          v-for="option in TYPE_OPTIONS"
-          :key="option.value"
-          class="flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition-all"
-          :class="fieldForm.type === option.value
-            ? 'border-emerald-300 bg-emerald-50'
-            : 'border-slate-300 bg-slate-50 hover:border-slate-400 hover:bg-white'"
-          @click="emit('select-type', option.value)"
-        >
-          <span class="text-sm" :class="fieldForm.type === option.value ? 'text-emerald-700' : 'text-slate-600'">
-            {{ option.icon }}
-          </span>
-          <span class="text-[12px] font-semibold" :class="fieldForm.type === option.value ? 'text-emerald-700' : 'text-slate-700'">
-            {{ option.label }}
-          </span>
-          <span class="text-[10px]" :class="fieldForm.type === option.value ? 'text-emerald-600' : 'text-slate-500'">
-            {{ option.desc }}
-          </span>
-        </button>
+      <!-- Tab: Data Source -->
+      <div v-show="activeTab === 'source'">
+        <DataSourceFieldConfig
+          :field-form="fieldForm"
+          :formula-tokens="formulaTokens"
+          :available-fields-for-formula="availableFieldsForFormula"
+          :get-token-sign="getTokenSign"
+          @select-type="emit('select-type', $event)"
+          @update-source="emit('update-source', $event)"
+          @update-calc="emit('update-calc', $event)"
+          @toggle-akun-type="emit('toggle-akun-type', $event)"
+          @toggle-token="(field, sign) => emit('toggle-token', field, sign)"
+          @remove-token="emit('remove-token', $event)"
+          @clear-tokens="emit('clear-tokens')"
+        />
+      </div>
+
+      <!-- Tab: Display -->
+      <div v-show="activeTab === 'display'">
+        <DisplayFieldConfig
+          :field-form="fieldForm"
+          @update-preview-row-type="emit('update-preview-row-type', $event)"
+        />
       </div>
     </div>
 
-    <NormalFieldConfig
-      :field-form="fieldForm"
-      @update-preview-row-type="emit('update-preview-row-type', $event)"
-    />
+    <!-- Action Buttons -->
+    <div v-if="isAddingField && !selectedField" class="flex flex-col gap-3">
+      <div v-if="!isFieldFormValid" class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+        <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <div class="text-xs">
+          <p class="font-medium text-amber-900">Form belum lengkap</p>
+          <p class="mt-1 text-amber-800">{{ getValidationMessage() }}</p>
+        </div>
+      </div>
 
-    <AccountFieldConfig
-      v-if="fieldForm.type === 'account'"
-      :field-form="fieldForm"
-      @update-source="emit('update-source', $event)"
-      @update-calc="emit('update-calc', $event)"
-      @toggle-akun-type="emit('toggle-akun-type', $event as AkunType)"
-    />
-
-    <FormulaFieldConfig
-      v-if="fieldForm.type === 'formula'"
-      :field-form="fieldForm"
-      :formula-tokens="formulaTokens"
-      :available-fields-for-formula="availableFieldsForFormula"
-      :get-token-sign="getTokenSign"
-      @toggle-token="(field, sign) => emit('toggle-token', field, sign)"
-      @remove-token="emit('remove-token', $event)"
-      @clear-tokens="emit('clear-tokens')"
-    />
-
-    <div v-if="isAddingField && !selectedField" class="flex gap-2 pt-1">
-      <button
-        class="flex-1 rounded-lg border border-slate-300 py-2 text-sm text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-100 hover:text-slate-900"
-        @click="emit('cancel-add')"
-      >
-        Batal
-      </button>
-      <button
-        class="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
-        :class="fieldForm.name && fieldForm.code
-          ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-          : 'cursor-not-allowed bg-slate-200 text-slate-500'"
-        :disabled="!fieldForm.name || !fieldForm.code"
-        @click="emit('add-field')"
-      >
-        + Tambah baris
-      </button>
+      <div class="flex gap-2">
+        <button
+          class="flex-1 rounded-lg border border-slate-300 py-2 text-sm text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-100 hover:text-slate-900"
+          @click="emit('cancel-add')"
+        >
+          Batal
+        </button>
+        <button
+          class="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
+          :class="isFieldFormValid
+            ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+            : 'cursor-not-allowed bg-slate-200 text-slate-500'"
+          :disabled="!isFieldFormValid"
+          :title="!isFieldFormValid ? getValidationMessage() : 'Tambah baris baru'"
+          @click="emit('add-field')"
+        >
+          + Tambah baris
+        </button>
+      </div>
     </div>
 
     <div v-else-if="selectedField" class="flex gap-2 pt-1">

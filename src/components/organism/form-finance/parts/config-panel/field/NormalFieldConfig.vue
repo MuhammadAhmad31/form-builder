@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormPreviewRowType } from '@/composables/useFormStructure'
-import { PREVIEW_ROW_TYPE_OPTIONS } from '../../utils/configPanel'
+import { PREVIEW_ROW_TYPE_OPTIONS } from '../../../utils/configPanel'
 
 interface Props {
   fieldForm: {

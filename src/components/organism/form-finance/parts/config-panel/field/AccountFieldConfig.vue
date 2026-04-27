@@ -4,7 +4,7 @@ import {
   AKUN_CALC_OPTIONS,
   AKUN_SOURCE_OPTIONS,
   AKUN_TYPE_OPTIONS,
-} from '../../utils/configPanel'
+} from '../../../utils/configPanel'
 
 interface Props {
   fieldForm: {

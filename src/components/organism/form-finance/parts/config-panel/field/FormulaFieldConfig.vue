@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormField, FormSection } from "@/composables/useFormStructure";
-import { fieldTypeDot, type FormulaToken } from "../../utils/configPanel";
+import { fieldTypeDot, type FormulaToken } from "../../../utils/configPanel";
 
 interface Props {
     fieldForm: {
