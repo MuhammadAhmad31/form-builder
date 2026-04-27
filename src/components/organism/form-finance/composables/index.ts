@@ -1,3 +1,5 @@
 export { useFormRendererPanel } from './useFormRendererPanel'
 export { useFormBuilder } from './useFormBuilder'
 export { useConfigPanel } from './useConfigPanel'
+export { useFormValidation } from './useFormValidation'
+export type { ValidationRule, FormFieldConfig, FormValidationResult } from './useFormValidation'
