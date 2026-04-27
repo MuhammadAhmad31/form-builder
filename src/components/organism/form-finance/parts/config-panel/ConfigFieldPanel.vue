@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { AkunType, FormField, FormPreviewRowType, FormSection } from '@/composables/useFormStructure'
 import {
   typeIconClass,
   typeLabelText,
   type FormulaToken,
 } from '../../utils/configPanel'
+import { useFormValidation } from '../../composables/useFormValidation'
 import GeneralFieldConfig from './tabs/GeneralFieldConfig.vue'
 import DataSourceFieldConfig from './tabs/DataSourceFieldConfig.vue'
 import DisplayFieldConfig from './tabs/DisplayFieldConfig.vue'
@@ -71,41 +72,48 @@ const tabItems = [
   { id: 'display', label: 'Tampilan' },
 ]
 
-// Validation function untuk menentukan apakah field form valid untuk ditambahkan
-const getFieldValidationErrors = () => {
-  const errors: string[] = []
-
-  if (!props.fieldForm.name?.trim()) {
-    errors.push('label_baris')
-  }
-
-  if (!props.fieldForm.code?.trim()) {
-    errors.push('kode_baris')
-  }
-
-  if (!props.fieldForm.type) {
-    errors.push('tipe_sumber_data')
-  }
-
-  return errors
+// Type untuk field validation
+interface FieldValidationForm {
+  name: string
+  code: string
+  type: string
 }
 
-const isFieldFormValid = computed(() => {
-  return getFieldValidationErrors().length === 0
+// Setup form validation menggunakan composable helper dengan strict typing
+const { validateField, getFieldError, isFormValid } = useFormValidation<FieldValidationForm>({
+  name: {
+    label: 'Label Baris',
+    rules: [
+      { type: 'required', message: 'Label baris harus diisi' },
+      { type: 'minLength', value: 1 },
+    ],
+  },
+  code: {
+    label: 'Kode Baris',
+    rules: [
+      { type: 'required', message: 'Kode baris harus diisi' },
+      { type: 'minLength', value: 1 },
+    ],
+  },
+  type: {
+    label: 'Tipe Sumber Data',
+    rules: [
+      { type: 'required', message: 'Pilih tipe sumber data di tab "Sumber Data"' },
+    ],
+  },
 })
 
-const getValidationMessage = () => {
-  const errors = getFieldValidationErrors()
-  if (errors.length === 0) return ''
+// Re-validate saat fieldForm berubah
+watch(
+  () => props.fieldForm,
+  async (newForm) => {
+    await validateField('name', newForm.name)
+    await validateField('code', newForm.code)
+    await validateField('type', newForm.type)
+  },
+  { deep: true }
+)
 
-  const errorMessages: Record<string, string> = {
-    label_baris: 'Isi label baris',
-    kode_baris: 'Kode baris otomatis dari label',
-    tipe_sumber_data: 'Pilih tipe sumber data di tab "Sumber Data"',
-  }
-
-  return errors.map(e => errorMessages[e]).join(' • ')
-}
 </script>
 
 <template>
@@ -194,13 +202,26 @@ const getValidationMessage = () => {
 
     <!-- Action Buttons -->
     <div v-if="isAddingField && !selectedField" class="flex flex-col gap-3">
-      <div v-if="!isFieldFormValid" class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+      <div v-if="!isFormValid" class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
         <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
         </svg>
         <div class="text-xs">
           <p class="font-medium text-amber-900">Form belum lengkap</p>
-          <p class="mt-1 text-amber-800">{{ getValidationMessage() }}</p>
+          <ul class="mt-2 space-y-1 text-amber-800">
+            <li v-if="getFieldError('name')" class="flex items-center gap-1">
+              <span class="text-lg">•</span>
+              {{ getFieldError('name') }}
+            </li>
+            <li v-if="getFieldError('code')" class="flex items-center gap-1">
+              <span class="text-lg">•</span>
+              {{ getFieldError('code') }}
+            </li>
+            <li v-if="getFieldError('type')" class="flex items-center gap-1">
+              <span class="text-lg">•</span>
+              {{ getFieldError('type') }}
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -213,11 +234,11 @@ const getValidationMessage = () => {
         </button>
         <button
           class="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
-          :class="isFieldFormValid
+          :class="isFormValid
             ? 'bg-emerald-600 text-white hover:bg-emerald-700'
             : 'cursor-not-allowed bg-slate-200 text-slate-500'"
-          :disabled="!isFieldFormValid"
-          :title="!isFieldFormValid ? getValidationMessage() : 'Tambah baris baru'"
+          :disabled="!isFormValid"
+          :title="!isFormValid ? 'Lengkapi semua field yang diperlukan' : 'Tambah baris baru'"
           @click="emit('add-field')"
         >
           + Tambah baris

@@ -16,7 +16,7 @@ export type ValidationRule =
  * Form field validation configuration
  */
 export interface FormFieldConfig {
-  name: string
+  name?: string
   rules: ValidationRule[]
   label?: string
 }
@@ -31,42 +31,56 @@ export interface FormValidationResult {
 }
 
 /**
- * Composable untuk form validation yang flexible dan reusable
+ * Composable untuk form validation yang flexible dan reusable dengan strict typing
+ * 
+ * @template T - Form data type untuk strict field name checking
  * 
  * @example
- * const { fields, validate, getFieldError, isFieldValid } = useFormValidation({
- *   name: {
- *     rules: [
- *       { type: 'required', message: 'Nama harus diisi' },
- *       { type: 'minLength', value: 3, message: 'Minimal 3 karakter' }
- *     ]
- *   },
+ * // Define form data type
+ * interface LoginForm {
+ *   email: string
+ *   password: string
+ * }
+ * 
+ * // Setup validation dengan generic type - akan error jika field name tidak match
+ * const { validateField, getFieldError, isFormValid } = useFormValidation<LoginForm>({
  *   email: {
+ *     label: 'Email',
  *     rules: [
  *       { type: 'required' },
  *       { type: 'email', message: 'Email tidak valid' }
  *     ]
+ *   },
+ *   password: {
+ *     label: 'Password',
+ *     rules: [
+ *       { type: 'required' },
+ *       { type: 'minLength', value: 8 }
+ *     ]
  *   }
+ *   // names: { ... }  // ERROR: 'names' tidak ada di LoginForm
  * })
  * 
- * // Di input:
- * <input v-model="formData.name" @blur="validate('name')" />
- * <span v-if="!isFieldValid('name')">{{ getFieldError('name') }}</span>
+ * // Validasi dengan strict type checking
+ * validateField('email', value)    // OK
+ * validateField('emaill', value)   // ERROR: 'emaill' tidak ada di LoginForm
  */
-export function useFormValidation(config: Record<string, FormFieldConfig>) {
+export function useFormValidation<T extends Record<string, any> = Record<string, any>>(
+  config: Partial<Record<keyof T, FormFieldConfig>>
+) {
   // Simpan config field
-  const fieldsConfig = config
+  const fieldsConfig = config as Record<string, FormFieldConfig>
 
   // Simpan error state per field
-  const fieldErrors = ref<Record<string, string>>({})
+  const fieldErrors = ref<Partial<Record<keyof T, string>>>({})
 
   // Simpan validated state per field
-  const fieldValidated = ref<Record<string, boolean>>({})
+  const fieldValidated = ref<Partial<Record<keyof T, boolean>>>({})
 
   // Initialize semua field
   for (const fieldName of Object.keys(config)) {
-    fieldErrors.value[fieldName] = ''
-    fieldValidated.value[fieldName] = false
+    fieldErrors.value[fieldName as keyof T] = ''
+    fieldValidated.value[fieldName as keyof T] = false
   }
 
   /**
@@ -175,16 +189,16 @@ export function useFormValidation(config: Record<string, FormFieldConfig>) {
   /**
    * Validate field value dengan semua rules
    */
-  const validateField = async (fieldName: string, value: any): Promise<boolean> => {
-    const config = fieldsConfig[fieldName]
+  const validateField = async (fieldName: keyof T, value: any): Promise<boolean> => {
+    const config = fieldsConfig[fieldName as string]
     if (!config) {
-      console.warn(`Field ${fieldName} tidak ada di config`)
+      console.warn(`Field ${String(fieldName)} tidak ada di config`)
       return true
     }
 
     // Jalankan semua rules, stop di rule pertama yang error
     for (const rule of config.rules) {
-      const error = await validateRule(value, rule, fieldName)
+      const error = await validateRule(value, rule, fieldName as string)
       if (error) {
         fieldErrors.value[fieldName] = error
         fieldValidated.value[fieldName] = true
@@ -201,15 +215,15 @@ export function useFormValidation(config: Record<string, FormFieldConfig>) {
   /**
    * Validate semua fields sekaligus
    */
-  const validateAll = async (formData: Record<string, any>): Promise<FormValidationResult[]> => {
+  const validateAll = async (formData: Partial<T>): Promise<FormValidationResult[]> => {
     const results: FormValidationResult[] = []
 
     for (const [fieldName, value] of Object.entries(formData)) {
-      const isValid = await validateField(fieldName, value)
+      const isValid = await validateField(fieldName as keyof T, value)
       results.push({
         field: fieldName,
         isValid,
-        error: fieldErrors.value[fieldName],
+        error: fieldErrors.value[fieldName as keyof T],
       })
     }
 
@@ -219,22 +233,22 @@ export function useFormValidation(config: Record<string, FormFieldConfig>) {
   /**
    * Get error message untuk field
    */
-  const getFieldError = (fieldName: string) => {
+  const getFieldError = (fieldName: keyof T): string => {
     return fieldErrors.value[fieldName] || ''
   }
 
   /**
    * Check apakah field valid
    */
-  const isFieldValid = computed(() => (fieldName: string) => {
-    return fieldValidated.value[fieldName] && !fieldErrors.value[fieldName]
+  const isFieldValid = computed(() => (fieldName: keyof T): boolean => {
+    return (fieldValidated.value[fieldName] ?? false) && !(fieldErrors.value[fieldName])
   })
 
   /**
    * Check apakah field sudah di-validate
    */
-  const isFieldValidated = computed(() => (fieldName: string) => {
-    return fieldValidated.value[fieldName]
+  const isFieldValidated = computed(() => (fieldName: keyof T): boolean => {
+    return fieldValidated.value[fieldName] ?? false
   })
 
   /**
@@ -259,7 +273,7 @@ export function useFormValidation(config: Record<string, FormFieldConfig>) {
   /**
    * Reset specific field validation
    */
-  const resetFieldValidation = (fieldName: string) => {
+  const resetFieldValidation = (fieldName: keyof T) => {
     fieldErrors.value[fieldName] = ''
     fieldValidated.value[fieldName] = false
   }
