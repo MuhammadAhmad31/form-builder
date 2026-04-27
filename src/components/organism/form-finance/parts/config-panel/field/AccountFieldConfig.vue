@@ -1,48 +1,49 @@
 <script setup lang="ts">
-import type { FormField } from '@/composables/useFormStructure'
+import type { AkunMode, AkunStrategy } from '@/composables/useFormStructure'
 import {
-  AKUN_CALC_OPTIONS,
-  AKUN_SOURCE_OPTIONS,
-  AKUN_TYPE_OPTIONS,
+  AKUN_MODE_OPTIONS,
+  AKUN_STRATEGY_OPTIONS,
 } from '../../../utils/configPanel'
 
 interface Props {
   fieldForm: {
-    akunSource: NonNullable<FormField['akunSource']>
-    akunTypes: NonNullable<FormField['akunTypes']>
-    akunCalc: NonNullable<FormField['akunCalc']>
+    akunMode?: AkunMode
+    akunStrategy?: AkunStrategy
   }
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'update-source': [source: NonNullable<FormField['akunSource']>]
-  'update-calc': [calc: NonNullable<FormField['akunCalc']>]
+  'update-mode': [mode: AkunMode]
+  'update-strategy': [strategy: AkunStrategy]
   'toggle-akun-type': [type: string]
 }>()
 
-const handleSourceChange = (event: Event) => {
-  const value = (event.target as HTMLSelectElement).value as NonNullable<FormField['akunSource']>
-  emit('update-source', value)
+const handleModeChange = (event: Event) => {
+  const value = (event.target as HTMLSelectElement).value as AkunMode
+  emit('update-mode', value)
 }
 
-const handleCalcChange = (event: Event) => {
-  const value = (event.target as HTMLSelectElement).value as NonNullable<FormField['akunCalc']>
-  emit('update-calc', value)
+const handleStrategyChange = (event: Event) => {
+  const value = (event.target as HTMLSelectElement).value as AkunStrategy
+  emit('update-strategy', value)
 }
 </script>
 
 <template>
+
+<div class="grid grid-cols-2 gap-2">
   <div class="flex flex-col gap-1.5">
-    <label class="text-xs font-semibold text-slate-600">Cara mengambil akun</label>
+    <label class="text-xs font-semibold text-slate-600">Mode akun <span class="text-red-500">*</span></label>
     <div class="relative">
       <select
-        :value="fieldForm.akunSource"
+        :value="fieldForm.akunMode || 'single'"
         class="w-full appearance-none rounded-lg border border-slate-300 bg-white px-3 py-2 pr-8 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500"
-        @change="handleSourceChange"
+        @change="handleModeChange"
       >
-        <option v-for="option in AKUN_SOURCE_OPTIONS" :key="option.value" :value="option.value">
+        <option value="" disabled>Pilih mode</option>
+        <option v-for="option in AKUN_MODE_OPTIONS" :key="option.value" :value="option.value">
           {{ option.label }}
         </option>
       </select>
@@ -52,34 +53,16 @@ const handleCalcChange = (event: Event) => {
     </div>
   </div>
 
-  <template v-if="fieldForm.akunSource === 'semua_akun_tipe'">
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-semibold text-slate-600">Tipe akun yang diambil</label>
-      <div class="flex flex-wrap gap-1.5">
-        <button
-          v-for="option in AKUN_TYPE_OPTIONS"
-          :key="option.value"
-          class="rounded-full border px-3 py-1 text-xs font-medium transition-all"
-          :class="fieldForm.akunTypes.includes(option.value)
-            ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-            : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900'"
-          @click="emit('toggle-akun-type', option.value)"
-        >
-          {{ option.label }}
-        </button>
-      </div>
-    </div>
-  </template>
-
   <div class="flex flex-col gap-1.5">
-    <label class="text-xs font-semibold text-slate-600">Cara menghitung nilai</label>
+    <label class="text-xs font-semibold text-slate-600">Data strategy <span class="text-red-500">*</span></label>
     <div class="relative">
       <select
-        :value="fieldForm.akunCalc"
+        :value="fieldForm.akunStrategy || 'period_net_change'"
         class="w-full appearance-none rounded-lg border border-slate-300 bg-white px-3 py-2 pr-8 text-sm text-slate-900 outline-none transition-colors focus:border-emerald-500"
-        @change="handleCalcChange"
+        @change="handleStrategyChange"
       >
-        <option v-for="option in AKUN_CALC_OPTIONS" :key="option.value" :value="option.value">
+        <option value="" disabled>Pilih strategi</option>
+        <option v-for="option in AKUN_STRATEGY_OPTIONS" :key="option.value" :value="option.value">
           {{ option.label }}
         </option>
       </select>
@@ -88,4 +71,5 @@ const handleCalcChange = (event: Event) => {
       </svg>
     </div>
   </div>
+</div>
 </template>

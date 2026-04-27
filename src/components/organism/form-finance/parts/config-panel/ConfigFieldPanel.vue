@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { AkunType, FormField, FormPreviewRowType, FormSection } from '@/composables/useFormStructure'
+import type { FormField, FormPreviewRowType, FormSection } from '@/composables/useFormStructure'
 import {
   typeIconClass,
   typeLabelText,
@@ -17,13 +17,15 @@ interface Props {
   fieldForm: {
     name: string
     code: string
-    type: FormField['type']
+    type: FormField['type'] | ''
     formula: string
     description: string
     previewRowType?: FormPreviewRowType
-    akunSource: NonNullable<FormField['akunSource']>
-    akunTypes: NonNullable<FormField['akunTypes']>
-    akunCalc: NonNullable<FormField['akunCalc']>
+    akunMode?: FormField['akunMode']
+    akunStrategy?: FormField['akunStrategy']
+    depthMode?: FormField['depthMode']
+    coaCategory?: FormField['coaCategory']
+    categoryStrategy?: FormField['categoryStrategy']
   }
   formulaTokens: FormulaToken[]
   availableFieldsForFormula: Array<FormSection & { fields: FormField[] }>
@@ -37,9 +39,11 @@ const emit = defineEmits<{
   'update-description': [description: string]
   'select-type': [type: FormField['type']]
   'update-preview-row-type': [rowType?: FormPreviewRowType]
-  'update-source': [source: NonNullable<FormField['akunSource']>]
-  'update-calc': [calc: NonNullable<FormField['akunCalc']>]
-  'toggle-akun-type': [type: AkunType]
+  'update-mode': [mode: string]
+  'update-strategy': [strategy: string]
+  'update-depth-mode': [mode: string]
+  'update-coa-category': [category: string]
+  'update-category-strategy': [strategy: string]
   'toggle-token': [field: FormField, sign: 'pos' | 'neg']
   'remove-token': [fieldId: string]
   'clear-tokens': []
@@ -77,6 +81,11 @@ interface FieldValidationForm {
   name: string
   code: string
   type: string
+  akunMode?: string
+  akunStrategy?: string
+  depthMode?: string
+  coaCategory?: string
+  categoryStrategy?: string
 }
 
 // Setup form validation menggunakan composable helper dengan strict typing
@@ -101,6 +110,76 @@ const { validateField, getFieldError, isFormValid } = useFormValidation<FieldVal
       { type: 'required', message: 'Pilih tipe sumber data di tab "Sumber Data"' },
     ],
   },
+  akunMode: {
+    label: 'Mode Akun',
+    rules: [
+      {
+        type: 'custom',
+        validate: (value) => {
+          if (props.fieldForm.type === 'account' && !value) {
+            return 'Mode akun harus dipilih'
+          }
+          return true
+        },
+      },
+    ],
+  },
+  akunStrategy: {
+    label: 'Data Strategy',
+    rules: [
+      {
+        type: 'custom',
+        validate: (value) => {
+          if (props.fieldForm.type === 'account' && !value) {
+            return 'Data strategy harus dipilih'
+          }
+          return true
+        },
+      },
+    ],
+  },
+  depthMode: {
+    label: 'Depth Mode',
+    rules: [
+      {
+        type: 'custom',
+        validate: (value) => {
+          if (props.fieldForm.type === 'category_account' && !value) {
+            return 'Depth mode harus dipilih'
+          }
+          return true
+        },
+      },
+    ],
+  },
+  coaCategory: {
+    label: 'COA Category',
+    rules: [
+      {
+        type: 'custom',
+        validate: (value) => {
+          if (props.fieldForm.type === 'category_account' && !value) {
+            return 'COA category harus dipilih'
+          }
+          return true
+        },
+      },
+    ],
+  },
+  categoryStrategy: {
+    label: 'Category Strategy',
+    rules: [
+      {
+        type: 'custom',
+        validate: (value) => {
+          if (props.fieldForm.type === 'category_account' && !value) {
+            return 'Category strategy harus dipilih'
+          }
+          return true
+        },
+      },
+    ],
+  },
 })
 
 // Re-validate saat fieldForm berubah
@@ -110,6 +189,11 @@ watch(
     await validateField('name', newForm.name)
     await validateField('code', newForm.code)
     await validateField('type', newForm.type)
+    await validateField('akunMode', newForm.akunMode || '')
+    await validateField('akunStrategy', newForm.akunStrategy || '')
+    await validateField('depthMode', newForm.depthMode || '')
+    await validateField('coaCategory', newForm.coaCategory || '')
+    await validateField('categoryStrategy', newForm.categoryStrategy || '')
   },
   { deep: true }
 )
@@ -182,9 +266,8 @@ watch(
           :available-fields-for-formula="availableFieldsForFormula"
           :get-token-sign="getTokenSign"
           @select-type="emit('select-type', $event)"
-          @update-source="emit('update-source', $event)"
-          @update-calc="emit('update-calc', $event)"
-          @toggle-akun-type="emit('toggle-akun-type', $event)"
+          @update-mode="emit('update-mode', $event)"
+          @update-strategy="emit('update-strategy', $event)"
           @toggle-token="(field, sign) => emit('toggle-token', field, sign)"
           @remove-token="emit('remove-token', $event)"
           @clear-tokens="emit('clear-tokens')"

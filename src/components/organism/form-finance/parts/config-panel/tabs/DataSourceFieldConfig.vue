@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import type { AkunType, FormField, FormSection } from '@/composables/useFormStructure'
+import type { AkunMode, AkunStrategy, CategoryStrategy, CoaCategory, DepthMode, FormField, FormSection } from '@/composables/useFormStructure'
 import {
   TYPE_OPTIONS,
   type FormulaToken,
 } from '../../../utils/configPanel'
 import AccountFieldConfig from '../field/AccountFieldConfig.vue'
+import CategoryAccountFieldConfig from '../field/CategoryAccountFieldConfig.vue'
 import FormulaFieldConfig from '../field/FormulaFieldConfig.vue'
 
 interface Props {
   fieldForm: {
-    type: FormField['type']
+    type: FormField['type'] | ''
     formula: string
-    akunSource: NonNullable<FormField['akunSource']>
-    akunTypes: NonNullable<FormField['akunTypes']>
-    akunCalc: NonNullable<FormField['akunCalc']>
+    akunMode?: AkunMode
+    akunStrategy?: AkunStrategy
+    depthMode?: DepthMode
+    coaCategory?: CoaCategory
+    categoryStrategy?: CategoryStrategy
   }
   formulaTokens: FormulaToken[]
   availableFieldsForFormula: Array<FormSection & { fields: FormField[] }>
@@ -24,9 +27,11 @@ defineProps<Props>()
 
 const emit = defineEmits<{
   'select-type': [type: FormField['type']]
-  'update-source': [source: NonNullable<FormField['akunSource']>]
-  'update-calc': [calc: NonNullable<FormField['akunCalc']>]
-  'toggle-akun-type': [type: AkunType]
+  'update-mode': [mode: AkunMode]
+  'update-strategy': [strategy: AkunStrategy]
+  'update-depth-mode': [mode: DepthMode]
+  'update-coa-category': [category: CoaCategory]
+  'update-category-strategy': [strategy: CategoryStrategy]
   'toggle-token': [field: FormField, sign: 'pos' | 'neg']
   'remove-token': [fieldId: string]
   'clear-tokens': []
@@ -66,9 +71,16 @@ const emit = defineEmits<{
       <AccountFieldConfig
         v-if="fieldForm.type === 'account'"
         :field-form="fieldForm"
-        @update-source="emit('update-source', $event)"
-        @update-calc="emit('update-calc', $event)"
-        @toggle-akun-type="emit('toggle-akun-type', $event as AkunType)"
+        @update-mode="emit('update-mode', $event)"
+        @update-strategy="emit('update-strategy', $event)"
+      />
+
+      <CategoryAccountFieldConfig
+        v-if="fieldForm.type === 'category_account'"
+        :field-form="fieldForm"
+        @update-depth-mode="emit('update-depth-mode', $event)"
+        @update-coa-category="emit('update-coa-category', $event)"
+        @update-category-strategy="emit('update-category-strategy', $event)"
       />
 
       <FormulaFieldConfig
@@ -82,9 +94,9 @@ const emit = defineEmits<{
         @clear-tokens="emit('clear-tokens')"
       />
 
-      <div v-if="(fieldForm.type as string) === 'normal' || (fieldForm.type as string) === 'category'" class="text-sm text-slate-500">
+      <div v-if="(fieldForm.type as string) === 'normal' || (fieldForm.type as string) === 'reference'" class="text-sm text-slate-500">
         <p class="text-[11px]">
-          {{ (fieldForm.type as string) === 'normal' ? 'Baris detail biasa - tidak ada konfigurasi data khusus' : 'Header kategori - tidak ada konfigurasi data khusus' }}
+          {{ (fieldForm.type as string) === 'normal' ? 'Baris detail biasa - tidak ada konfigurasi data khusus' : 'Nilai manual / referensi - tidak ada konfigurasi data khusus' }}
         </p>
       </div>
     </div>

@@ -58,7 +58,6 @@ const emit = defineEmits<{
           >
             <div class="grid grid-cols-3 items-center gap-3">
               <p class="ml-4 text-sm text-muted-foreground">{{ field.name }}</p>
-              <p class="text-xs">{{ field.akunSource }}</p>
 
               <Select
                 :model-value="selectedFieldValues[field.id]"

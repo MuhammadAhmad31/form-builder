@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import type { AkunType, FormField, FormPreviewRowType, FormSection, FormStructure } from '@/composables/useFormStructure'
+import type { FormField, FormPreviewRowType, FormSection, FormStructure } from '@/composables/useFormStructure'
 import {
   type ConfigFieldForm,
   defaultFieldForm,
@@ -59,9 +59,11 @@ export function useConfigPanel(props: Props, emit: Emits) {
       formula: field.formula || '',
       description: field.description || '',
       previewRowType: field.previewRowType,
-      akunSource: field.akunSource || 'semua_akun_tipe',
-      akunTypes: field.akunTypes || ['pendapatan'],
-      akunCalc: field.akunCalc || 'mutasi_bersih',
+      akunMode: field.akunMode,
+      akunStrategy: field.akunStrategy,
+      depthMode: field.depthMode,
+      coaCategory: field.coaCategory,
+      categoryStrategy: field.categoryStrategy,
     }
 
     formulaTokens.value = field.type === 'formula'
@@ -114,20 +116,22 @@ export function useConfigPanel(props: Props, emit: Emits) {
   )
 
   const handleAddField = () => {
-    if (!props.addingFieldForSection || !fieldForm.value.name || !fieldForm.value.code) return
+    if (!props.addingFieldForSection || !fieldForm.value.name || !fieldForm.value.code || !fieldForm.value.type) return
 
     emit('add-field', props.addingFieldForSection, {
       ...fieldForm.value,
+      type: fieldForm.value.type as Exclude<ConfigFieldForm['type'], ''>,
     })
 
     resetFieldForm()
   }
 
   const handleSaveField = () => {
-    if (!props.selectedField) return
+    if (!props.selectedField || !fieldForm.value.type) return
 
     emit('update-field', {
       ...fieldForm.value,
+      type: fieldForm.value.type as Exclude<ConfigFieldForm['type'], ''>,
     })
   }
 
@@ -148,21 +152,6 @@ export function useConfigPanel(props: Props, emit: Emits) {
     emit('update-section', sectionForm.value)
   }
 
-  const toggleAkunType = (type: AkunType) => {
-    const types = fieldForm.value.akunTypes
-    const index = types.indexOf(type)
-
-    if (index === -1) {
-      types.push(type)
-    } else if (types.length > 1) {
-      types.splice(index, 1)
-    }
-
-    if (props.selectedField) {
-      handleUpdateField('akunTypes')
-    }
-  }
-
   const onTypeClick = (type: FormField['type']) => {
     fieldForm.value.type = type
     if (type === 'formula' && formulaTokens.value.length === 0 && fieldForm.value.formula) {
@@ -179,22 +168,10 @@ export function useConfigPanel(props: Props, emit: Emits) {
     }
   }
 
-  const onAkunSourceChange = () => {
-    if (props.selectedField) {
-      handleUpdateField('akunSource')
-    }
-  }
-
   const onPreviewRowTypeChange = (rowType?: FormPreviewRowType) => {
     fieldForm.value.previewRowType = rowType
     if (props.selectedField) {
       emit('update-field', { previewRowType: rowType })
-    }
-  }
-
-  const onAkunCalcChange = () => {
-    if (props.selectedField) {
-      handleUpdateField('akunCalc')
     }
   }
 
@@ -241,12 +218,9 @@ export function useConfigPanel(props: Props, emit: Emits) {
     handleCancelAdd,
     handleUpdateField,
     handleUpdateSection,
-    toggleAkunType,
     onTypeClick,
     onNameBlur,
     onPreviewRowTypeChange,
-    onAkunSourceChange,
-    onAkunCalcChange,
     getTokenSign,
     toggleToken,
     removeToken,

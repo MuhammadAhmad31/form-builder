@@ -2,9 +2,11 @@ import { ref, computed } from 'vue'
 
 export type FieldType = 'account' | 'formula' | 'category_account' | 'reference'
 export type FormPreviewRowType = 'item' | 'subsection' | 'section'
-export type AkunType = 'pendapatan' | 'beban' | 'aset' | 'kewajiban' | 'ekuitas'
-export type AkunSource = 'semua_akun_tipe' | 'akun_spesifik' | 'semua_akun'
-export type AkunCalc = 'mutasi_bersih' | 'saldo_akhir' | 'mutasi_debit' | 'mutasi_kredit'
+export type AkunMode = 'single' | 'multiple'
+export type AkunStrategy = 'period_net_change' | 'ending_balance' | 'beginning_balance'
+export type DepthMode = 'one_level' | 'one_level_below' | 'all_level'
+export type CoaCategory = 'pendapatan_usaha' | 'pendapatan_non_usaha' | 'beban_pokok' | 'beban_operasional' | 'beban_lainnya'
+export type CategoryStrategy = 'period_net_change' | 'ending_balance' | 'beginning_balance' | 'balance_change'
 
 export interface FormField {
   id: string
@@ -14,9 +16,11 @@ export interface FormField {
   formula?: string
   description?: string
   previewRowType?: FormPreviewRowType
-  akunSource?: AkunSource
-  akunTypes?: AkunType[]
-  akunCalc?: AkunCalc
+  akunMode?: AkunMode
+  akunStrategy?: AkunStrategy
+  depthMode?: DepthMode
+  coaCategory?: CoaCategory
+  categoryStrategy?: CategoryStrategy
 }
 
 export interface FormSection {

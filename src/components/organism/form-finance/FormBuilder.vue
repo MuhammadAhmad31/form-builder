@@ -65,8 +65,7 @@ const previewFieldValues = computed<Record<string, string>>(() => {
       }
 
       const baseValue = runningIndex * 10000000
-      const isExpenseLike = field.akunTypes?.includes('beban') ?? false
-      values[field.id] = String(isExpenseLike ? -baseValue : baseValue)
+      values[field.id] = String(baseValue)
       runningIndex += 1
     })
   })

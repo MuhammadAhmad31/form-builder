@@ -32,11 +32,8 @@ const {
   handleDeleteField,
   handleCancelAdd,
   handleUpdateSection,
-  toggleAkunType,
   onTypeClick,
   onPreviewRowTypeChange,
-  onAkunSourceChange,
-  onAkunCalcChange,
   getTokenSign,
   toggleToken,
   removeToken,
@@ -90,9 +87,11 @@ const handleHideLabel = (hideLabel: boolean) => {
       @update-description="(description) => (fieldForm.description = description)"
       @select-type="onTypeClick"
       @update-preview-row-type="onPreviewRowTypeChange"
-      @update-source="(source) => { fieldForm.akunSource = source; onAkunSourceChange() }"
-      @update-calc="(calc) => { fieldForm.akunCalc = calc; onAkunCalcChange() }"
-      @toggle-akun-type="toggleAkunType"
+      @update-mode="(mode: string) => { fieldForm.akunMode = mode as any }"
+      @update-strategy="(strategy: string) => { fieldForm.akunStrategy = strategy as any }"
+      @update-depth-mode="(mode: string) => { fieldForm.depthMode = mode as any }"
+      @update-coa-category="(category: string) => { fieldForm.coaCategory = category as any }"
+      @update-category-strategy="(strategy: string) => { fieldForm.categoryStrategy = strategy as any }"
       @toggle-token="toggleToken"
       @remove-token="removeToken"
       @clear-tokens="clearTokens"

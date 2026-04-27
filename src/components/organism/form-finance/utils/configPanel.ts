@@ -1,7 +1,9 @@
 import type {
-  AkunCalc,
-  AkunSource,
-  AkunType,
+  AkunMode,
+  AkunStrategy,
+  CategoryStrategy,
+  CoaCategory,
+  DepthMode,
   FormField,
   FormPreviewRowType,
   FormSection,
@@ -26,13 +28,15 @@ export interface TypeOption {
 export interface ConfigFieldForm {
   name: string
   code: string
-  type: FieldType
+  type: FieldType | ''
   formula: string
   description: string
   previewRowType?: FormPreviewRowType
-  akunSource: AkunSource
-  akunTypes: AkunType[]
-  akunCalc: AkunCalc
+  akunMode?: AkunMode
+  akunStrategy?: AkunStrategy
+  depthMode?: DepthMode
+  coaCategory?: CoaCategory
+  categoryStrategy?: CategoryStrategy
 }
 
 export const PREVIEW_ROW_TYPE_OPTIONS: Array<{ value: FormPreviewRowType; label: string; desc: string }> = [
@@ -48,25 +52,36 @@ export const TYPE_OPTIONS: TypeOption[] = [
   { value: 'reference', label: 'Referensi', desc: 'Nilai manual / referensi', icon: '↗' }
 ]
 
-export const AKUN_TYPE_OPTIONS: { value: AkunType; label: string }[] = [
-  { value: 'pendapatan', label: 'Pendapatan' },
-  { value: 'beban', label: 'Beban' },
-  { value: 'aset', label: 'Aset' },
-  { value: 'kewajiban', label: 'Kewajiban' },
-  { value: 'ekuitas', label: 'Ekuitas' },
+export const AKUN_MODE_OPTIONS: { value: AkunMode; label: string }[] = [
+  { value: 'single', label: 'Single' },
+  { value: 'multiple', label: 'Multiple' },
 ]
 
-export const AKUN_SOURCE_OPTIONS: { value: AkunSource; label: string }[] = [
-  { value: 'semua_akun_tipe', label: 'Semua akun bertipe tertentu' },
-  { value: 'akun_spesifik', label: 'Akun spesifik' },
-  { value: 'semua_akun', label: 'Semua akun' },
+export const AKUN_STRATEGY_OPTIONS: { value: AkunStrategy; label: string }[] = [
+  { value: 'period_net_change', label: 'Period Net Change' },
+  { value: 'ending_balance', label: 'Ending Balance' },
+  { value: 'beginning_balance', label: 'Beginning Balance' },
 ]
 
-export const AKUN_CALC_OPTIONS: { value: AkunCalc; label: string }[] = [
-  { value: 'mutasi_bersih', label: 'Mutasi bersih' },
-  { value: 'saldo_akhir', label: 'Saldo akhir' },
-  { value: 'mutasi_debit', label: 'Mutasi debit' },
-  { value: 'mutasi_kredit', label: 'Mutasi kredit' },
+export const DEPTH_MODE_OPTIONS: { value: DepthMode; label: string; desc: string }[] = [
+  { value: 'one_level', label: 'One Level', desc: 'Hanya level pertama' },
+  { value: 'one_level_below', label: 'One Level Below', desc: 'Satu level di bawah' },
+  { value: 'all_level', label: 'All Level', desc: 'Semua level' },
+]
+
+export const COA_CATEGORY_OPTIONS: { value: CoaCategory; label: string }[] = [
+  { value: 'pendapatan_usaha', label: 'Pendapatan Usaha (4-100)' },
+  { value: 'pendapatan_non_usaha', label: 'Pendapatan Non Usaha (4-200)' },
+  { value: 'beban_pokok', label: 'Beban Pokok (5-100)' },
+  { value: 'beban_operasional', label: 'Beban Operasional (5-200)' },
+  { value: 'beban_lainnya', label: 'Beban Lainnya (5-300)' },
+]
+
+export const CATEGORY_STRATEGY_OPTIONS: { value: CategoryStrategy; label: string }[] = [
+  { value: 'period_net_change', label: 'Period Net Change (Mutasi Bersih)' },
+  { value: 'ending_balance', label: 'Ending Balance (Saldo Akhir)' },
+  { value: 'beginning_balance', label: 'Beginning Balance (Saldo Awal)' },
+  { value: 'balance_change', label: 'Balance Change (Selisih)' },
 ]
 
 export function generateCodeFromName(name: string): string {
@@ -147,12 +162,14 @@ export function defaultFieldForm(): ConfigFieldForm {
   return {
     name: '',
     code: '',
-    type: 'akun' as FieldType,
+    type: '' as FieldType,
     formula: '',
     description: '',
     previewRowType: undefined,
-    akunSource: 'semua_akun_tipe' as AkunSource,
-    akunTypes: ['pendapatan'] as AkunType[],
-    akunCalc: 'mutasi_bersih' as AkunCalc,
+    akunMode: 'single' as AkunMode,
+    akunStrategy: 'period_net_change' as AkunStrategy,
+    depthMode: 'one_level_below' as DepthMode,
+    coaCategory: 'pendapatan_usaha' as CoaCategory,
+    categoryStrategy: 'period_net_change' as CategoryStrategy,
   }
 }
