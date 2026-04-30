@@ -7,6 +7,8 @@ import type {
   FormField,
   FormPreviewRowType,
   FormSection,
+  ReportTypeSource,
+  RowTypeFromSelectedReportTypeSource,
 } from '@/composables/useFormStructure'
 
 export type FieldType = FormField['type']
@@ -37,6 +39,8 @@ export interface ConfigFieldForm {
   depthMode?: DepthMode
   coaCategory?: CoaCategory
   categoryStrategy?: CategoryStrategy
+  reportTypeSource?: ReportTypeSource
+  rowTypeFromSelectedReportTypeSource?: RowTypeFromSelectedReportTypeSource
 }
 
 export const PREVIEW_ROW_TYPE_OPTIONS: Array<{ value: FormPreviewRowType; label: string; desc: string }> = [
@@ -82,6 +86,28 @@ export const CATEGORY_STRATEGY_OPTIONS: { value: CategoryStrategy; label: string
   { value: 'ending_balance', label: 'Ending Balance (Saldo Akhir)' },
   { value: 'beginning_balance', label: 'Beginning Balance (Saldo Awal)' },
   { value: 'balance_change', label: 'Balance Change (Selisih)' },
+]
+
+export const REPORT_TYPE_SOURCE_OPTIONS: { value: ReportTypeSource; label: string }[] = [
+  { value: 'cash_flow', label: 'Laporan Arus Kas' },
+  { value: 'profit_loss', label: 'Laporan Laba Rugi' },
+  { value: 'financial_position', label: 'Laporan Posisi Keuangan' },
+  { value: 'equity', label: 'Laporan Perubahan Ekuitas' },
+]
+
+export const ROW_TYPE_FROM_SELECTED_REPORT_TYPE_SOURCE_OPTIONS: { value: RowTypeFromSelectedReportTypeSource; label: string }[] = [
+  { value: 'operating_activities', label: 'Aktivitas Operasi' },
+  { value: 'investing_activities', label: 'Aktivitas Investasi' },
+  { value: 'financing_activities', label: 'Aktivitas Pendanaan' },
+  { value: 'non_operating_income_expense', label: 'Pendapatan/Beban Non Operasi' },
+  { value: 'income', label: 'Pendapatan' },
+  { value: 'cost_of_revenue', label: 'Harga Pokok Pendapatan' },
+  { value: 'expense', label: 'Beban' },
+  { value: 'current_assets', label: 'Aset Lancar' },
+  { value: 'non_current_assets', label: 'Aset Tidak Lancar' },
+  { value: 'current_liabilities', label: 'Kewajiban Lancar' },
+  { value: 'non_current_liabilities', label: 'Kewajiban Tidak Lancar' },
+  { value: 'equity', label: 'Ekuitas' },
 ]
 
 export function generateCodeFromName(name: string): string {
@@ -171,5 +197,7 @@ export function defaultFieldForm(): ConfigFieldForm {
     depthMode: 'one_level_below' as DepthMode,
     coaCategory: 'pendapatan_usaha' as CoaCategory,
     categoryStrategy: 'period_net_change' as CategoryStrategy,
+    reportTypeSource: '' as ReportTypeSource,
+    rowTypeFromSelectedReportTypeSource: '' as RowTypeFromSelectedReportTypeSource,
   }
 }

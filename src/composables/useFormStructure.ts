@@ -7,6 +7,8 @@ export type AkunStrategy = 'period_net_change' | 'ending_balance' | 'beginning_b
 export type DepthMode = 'one_level' | 'one_level_below' | 'all_level'
 export type CoaCategory = 'pendapatan_usaha' | 'pendapatan_non_usaha' | 'beban_pokok' | 'beban_operasional' | 'beban_lainnya'
 export type CategoryStrategy = 'period_net_change' | 'ending_balance' | 'beginning_balance' | 'balance_change'
+export type ReportTypeSource = 'cash_flow' | 'profit_loss' | 'financial_position' | 'equity'
+export type RowTypeFromSelectedReportTypeSource = 'operating_activities' | 'investing_activities' | 'financing_activities' | 'non_operating_income_expense' | 'income' | 'cost_of_revenue' | 'expense' | 'current_assets' | 'non_current_assets' | 'current_liabilities' | 'non_current_liabilities' | 'equity'
 
 export interface FormField {
   id: string
@@ -21,6 +23,8 @@ export interface FormField {
   depthMode?: DepthMode
   coaCategory?: CoaCategory
   categoryStrategy?: CategoryStrategy
+  reportTypeSource?: ReportTypeSource
+  rowTypeFromSelectedReportTypeSource?: RowTypeFromSelectedReportTypeSource
 }
 
 export interface FormSection {

@@ -99,6 +99,8 @@ const handleHideLabel = (hideLabel: boolean) => {
       @save-field="handleSaveField"
       @delete-field="handleDeleteField"
       @cancel-add="handleCancelAdd"
+      @update-report-type-source="(reportType: string) => { fieldForm.reportTypeSource = reportType as any }"
+      @update-row-type-from-selected-report-type-source="(rowType: string) => { fieldForm.rowTypeFromSelectedReportTypeSource = rowType as any }"
     />
   </div>
 </template>

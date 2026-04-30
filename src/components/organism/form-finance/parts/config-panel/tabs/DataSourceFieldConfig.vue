@@ -7,6 +7,7 @@ import {
 import AccountFieldConfig from '../field/AccountFieldConfig.vue'
 import CategoryAccountFieldConfig from '../field/CategoryAccountFieldConfig.vue'
 import FormulaFieldConfig from '../field/FormulaFieldConfig.vue'
+import ReferenceFieldConfig from '../field/ReferenceFieldConfig.vue'
 
 interface Props {
   fieldForm: {
@@ -17,6 +18,8 @@ interface Props {
     depthMode?: DepthMode
     coaCategory?: CoaCategory
     categoryStrategy?: CategoryStrategy
+    reportTypeSource?: FormField['reportTypeSource']
+    rowTypeFromSelectedReportTypeSource?: FormField['rowTypeFromSelectedReportTypeSource']
   }
   formulaTokens: FormulaToken[]
   availableFieldsForFormula: Array<FormSection & { fields: FormField[] }>
@@ -35,6 +38,8 @@ const emit = defineEmits<{
   'toggle-token': [field: FormField, sign: 'pos' | 'neg']
   'remove-token': [fieldId: string]
   'clear-tokens': []
+  'update-report-type-source': [reportType: string]
+  'update-row-type-from-selected-report-type-source': [rowType: string]
 }>()
 </script>
 
@@ -94,9 +99,16 @@ const emit = defineEmits<{
         @clear-tokens="emit('clear-tokens')"
       />
 
-      <div v-if="(fieldForm.type as string) === 'normal' || (fieldForm.type as string) === 'reference'" class="text-sm text-slate-500">
+      <ReferenceFieldConfig
+        v-if="fieldForm.type === 'reference'"
+        :field-form="fieldForm"
+        @update-report-type-source="emit('update-report-type-source', $event)"
+        @update-row-type-from-selected-report-type-source="emit('update-row-type-from-selected-report-type-source', $event)"
+      />
+
+      <div v-if="(fieldForm.type as string) === 'normal'" class="text-sm text-slate-500">
         <p class="text-[11px]">
-          {{ (fieldForm.type as string) === 'normal' ? 'Baris detail biasa - tidak ada konfigurasi data khusus' : 'Nilai manual / referensi - tidak ada konfigurasi data khusus' }}
+          {{ 'Baris detail biasa - tidak ada konfigurasi data khusus' }}
         </p>
       </div>
     </div>

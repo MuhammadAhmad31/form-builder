@@ -64,6 +64,8 @@ export function useConfigPanel(props: Props, emit: Emits) {
       depthMode: field.depthMode,
       coaCategory: field.coaCategory,
       categoryStrategy: field.categoryStrategy,
+      reportTypeSource: field.reportTypeSource,
+      rowTypeFromSelectedReportTypeSource: field.rowTypeFromSelectedReportTypeSource,
     }
 
     formulaTokens.value = field.type === 'formula'
