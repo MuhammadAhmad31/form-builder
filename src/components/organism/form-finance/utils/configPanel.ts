@@ -4,6 +4,7 @@ import type {
   CategoryStrategy,
   CoaCategory,
   DepthMode,
+  FirstLevel,
   FormField,
   FormPreviewRowType,
   FormSection,
@@ -41,6 +42,7 @@ export interface ConfigFieldForm {
   categoryStrategy?: CategoryStrategy
   reportTypeSource?: ReportTypeSource
   rowTypeFromSelectedReportTypeSource?: RowTypeFromSelectedReportTypeSource
+  firstLevel?: FirstLevel
 }
 
 export const PREVIEW_ROW_TYPE_OPTIONS: Array<{ value: FormPreviewRowType; label: string; desc: string }> = [
@@ -65,6 +67,14 @@ export const AKUN_STRATEGY_OPTIONS: { value: AkunStrategy; label: string }[] = [
   { value: 'period_net_change', label: 'Period Net Change' },
   { value: 'ending_balance', label: 'Ending Balance' },
   { value: 'beginning_balance', label: 'Beginning Balance' },
+]
+
+export const AKUN_FIRST_LEVEL_OPTIONS: { value: FirstLevel; label: string }[] = [
+  { value: 'asset', label: 'Asset' },
+  { value: 'liability', label: 'Liability' },
+  { value: 'equity', label: 'Equity' },
+  { value: 'income', label: 'Income' },
+  { value: 'expense', label: 'Expense' },
 ]
 
 export const DEPTH_MODE_OPTIONS: { value: DepthMode; label: string; desc: string }[] = [
@@ -199,5 +209,6 @@ export function defaultFieldForm(): ConfigFieldForm {
     categoryStrategy: 'period_net_change' as CategoryStrategy,
     reportTypeSource: '' as ReportTypeSource,
     rowTypeFromSelectedReportTypeSource: '' as RowTypeFromSelectedReportTypeSource,
+    firstLevel: '' as FirstLevel,
   }
 }

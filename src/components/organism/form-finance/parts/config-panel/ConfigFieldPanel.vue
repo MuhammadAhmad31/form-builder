@@ -14,6 +14,7 @@ import { useFormValidation } from "../../composables/useFormValidation";
 import GeneralFieldConfig from "./tabs/GeneralFieldConfig.vue";
 import DataSourceFieldConfig from "./tabs/DataSourceFieldConfig.vue";
 import DisplayFieldConfig from "./tabs/DisplayFieldConfig.vue";
+import { createFieldValidationRules } from "./validateFormConfig";
 
 interface Props {
   selectedField: FormField | null;
@@ -32,6 +33,7 @@ interface Props {
     categoryStrategy?: FormField["categoryStrategy"];
     reportTypeSource?: FormField["reportTypeSource"];
     rowTypeFromSelectedReportTypeSource?: FormField["rowTypeFromSelectedReportTypeSource"];
+    firstLevel?: FormField["firstLevel"];
   };
   formulaTokens: FormulaToken[];
   availableFieldsForFormula: Array<FormSection & { fields: FormField[] }>;
@@ -57,8 +59,9 @@ const emit = defineEmits<{
   "save-field": [];
   "delete-field": [];
   "cancel-add": [];
-  "update-report-type-source": [reportType: string];
-  "update-row-type-from-selected-report-type-source": [rowType: string];
+  "update-report-type-source": [reportType: FormField["reportTypeSource"]];
+  "update-row-type-from-selected-report-type-source": [rowType: FormField["rowTypeFromSelectedReportTypeSource"]];
+  "update-first-level": [type: FormField["firstLevel"]];
 }>();
 
 const activeTab = ref<"general" | "source" | "display">("general");
@@ -85,7 +88,11 @@ const tabItems = [
   { id: "display", label: "Tampilan" },
 ];
 
-// Type untuk field validation
+const { validateField, getFieldError, isFormValid } =
+  useFormValidation<FieldValidationForm>(
+    createFieldValidationRules(props.fieldForm)
+  );
+  
 interface FieldValidationForm {
   name: string;
   code: string;
@@ -95,107 +102,11 @@ interface FieldValidationForm {
   depthMode?: string;
   coaCategory?: string;
   categoryStrategy?: string;
+  firstLevel?: string;
+  reportTypeSource?: string;
+  rowTypeFromSelectedReportTypeSource?: string;
 }
 
-// Setup form validation menggunakan composable helper dengan strict typing
-const { validateField, getFieldError, isFormValid } =
-  useFormValidation<FieldValidationForm>({
-    name: {
-      label: "Label Baris",
-      rules: [
-        { type: "required", message: "Label baris harus diisi" },
-        { type: "minLength", value: 1 },
-      ],
-    },
-    code: {
-      label: "Kode Baris",
-      rules: [
-        { type: "required", message: "Kode baris harus diisi" },
-        { type: "minLength", value: 1 },
-      ],
-    },
-    type: {
-      label: "Tipe Sumber Data",
-      rules: [
-        {
-          type: "required",
-          message: 'Pilih tipe sumber data di tab "Sumber Data"',
-        },
-      ],
-    },
-    akunMode: {
-      label: "Mode Akun",
-      rules: [
-        {
-          type: "custom",
-          validate: (value) => {
-            if (props.fieldForm.type === "account" && !value) {
-              return "Mode akun harus dipilih";
-            }
-            return true;
-          },
-        },
-      ],
-    },
-    akunStrategy: {
-      label: "Data Strategy",
-      rules: [
-        {
-          type: "custom",
-          validate: (value) => {
-            if (props.fieldForm.type === "account" && !value) {
-              return "Data strategy harus dipilih";
-            }
-            return true;
-          },
-        },
-      ],
-    },
-    depthMode: {
-      label: "Depth Mode",
-      rules: [
-        {
-          type: "custom",
-          validate: (value) => {
-            if (props.fieldForm.type === "category_account" && !value) {
-              return "Depth mode harus dipilih";
-            }
-            return true;
-          },
-        },
-      ],
-    },
-    coaCategory: {
-      label: "COA Category",
-      rules: [
-        {
-          type: "custom",
-          validate: (value) => {
-            if (props.fieldForm.type === "category_account" && !value) {
-              return "COA category harus dipilih";
-            }
-            return true;
-          },
-        },
-      ],
-    },
-    categoryStrategy: {
-      label: "Category Strategy",
-      rules: [
-        {
-          type: "custom",
-          validate: (value) => {
-            if (props.fieldForm.type === "category_account" && !value) {
-              return "Category strategy harus dipilih";
-            }
-            return true;
-          },
-        },
-      ],
-    },
-  });
-
-// Re-validate saat fieldForm berubah
 watch(
   () => props.fieldForm,
   async (newForm) => {
@@ -207,6 +118,9 @@ watch(
     await validateField("depthMode", newForm.depthMode || "");
     await validateField("coaCategory", newForm.coaCategory || "");
     await validateField("categoryStrategy", newForm.categoryStrategy || "");
+    await validateField("firstLevel", newForm.firstLevel || "");
+    await validateField("reportTypeSource", newForm.reportTypeSource || "");
+    await validateField("rowTypeFromSelectedReportTypeSource", newForm.rowTypeFromSelectedReportTypeSource || "");
   },
   { deep: true },
 );
@@ -295,6 +209,7 @@ watch(
           @clear-tokens="emit('clear-tokens')"
           @update-report-type-source="emit('update-report-type-source', $event)"
           @update-row-type-from-selected-report-type-source="emit('update-row-type-from-selected-report-type-source', $event)"
+          @update-first-level="emit('update-first-level', $event)"
         />
       </div>
 

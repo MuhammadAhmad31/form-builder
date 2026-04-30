@@ -38,8 +38,9 @@ const emit = defineEmits<{
   'toggle-token': [field: FormField, sign: 'pos' | 'neg']
   'remove-token': [fieldId: string]
   'clear-tokens': []
-  'update-report-type-source': [reportType: string]
-  'update-row-type-from-selected-report-type-source': [rowType: string]
+  'update-report-type-source': [reportType: FormField['reportTypeSource']]
+  'update-row-type-from-selected-report-type-source': [rowType: FormField['rowTypeFromSelectedReportTypeSource']]
+  'update-first-level': [type: FormField['firstLevel']]
 }>()
 </script>
 
@@ -78,6 +79,7 @@ const emit = defineEmits<{
         :field-form="fieldForm"
         @update-mode="emit('update-mode', $event)"
         @update-strategy="emit('update-strategy', $event)"
+        @update-first-level="emit('update-first-level', $event)"
       />
 
       <CategoryAccountFieldConfig

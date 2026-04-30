@@ -9,6 +9,7 @@ export type CoaCategory = 'pendapatan_usaha' | 'pendapatan_non_usaha' | 'beban_p
 export type CategoryStrategy = 'period_net_change' | 'ending_balance' | 'beginning_balance' | 'balance_change'
 export type ReportTypeSource = 'cash_flow' | 'profit_loss' | 'financial_position' | 'equity'
 export type RowTypeFromSelectedReportTypeSource = 'operating_activities' | 'investing_activities' | 'financing_activities' | 'non_operating_income_expense' | 'income' | 'cost_of_revenue' | 'expense' | 'current_assets' | 'non_current_assets' | 'current_liabilities' | 'non_current_liabilities' | 'equity'
+export type FirstLevel = 'asset' | 'liability' | 'equity' | 'income' | 'expense'
 
 export interface FormField {
   id: string
@@ -25,6 +26,7 @@ export interface FormField {
   categoryStrategy?: CategoryStrategy
   reportTypeSource?: ReportTypeSource
   rowTypeFromSelectedReportTypeSource?: RowTypeFromSelectedReportTypeSource
+  firstLevel?: FirstLevel
 }
 
 export interface FormSection {
