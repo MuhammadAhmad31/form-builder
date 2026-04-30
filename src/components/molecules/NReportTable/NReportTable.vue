@@ -10,12 +10,10 @@ const props = withDefaults(
     type: 'equity-changes' | 'profit-loss' | 'financial-position' | 'cashflow';
     background?: 'white' | 'gray';
     hideTitle?: boolean;
-    layout?: 'staffle' | 'skontro';
   }>(),
   {
     background: 'white',
     hideTitle: false,
-    layout: 'staffle',
   }
 );
 
@@ -87,63 +85,35 @@ const shouldCenterEquityTable = computed(() => {
   return props.type === 'equity-changes' && columns.value.length <= 4;
 });
 
-const isSkontroLayout = computed(() => {
-  return props.type === 'financial-position' && props.layout === 'skontro';
+
+const hasMixedPosition = computed(() => {
+  if (props.type === 'equity-changes') return false;
+  const positions = new Set<string>();
+  groupedRows.value.forEach((row) => {
+    const pos = row.find((i) => i.position)?.position;
+    if (pos) positions.add(pos);
+  });
+  return positions.has('left') && positions.has('right');
 });
 
-const groupItemsByRow = (
-  items: ReportItem[],
-  startMarker: string,
-  endMarker: string
-) => {
-  const getRowNumber = (marker: string) =>
-    items.find((item) => item.rowText.toLowerCase() === marker)?.rowNumber;
+const rowsByPosition = computed(() => {
+  const left: ReportItem[][] = [];
+  const right: ReportItem[][] = [];
 
-  const startRow = getRowNumber(startMarker);
-  const endRow = getRowNumber(endMarker);
+  let currentPosition: 'left' | 'right' = 'left';
 
-  if (!startRow || !endRow) return [];
+  groupedRows.value.forEach((row) => {
+    const pos = row.find((i) => i.position)?.position;
+    if (pos) currentPosition = pos;
 
-  const itemsInRange = items.filter(
-    (item) => item.rowNumber >= startRow && item.rowNumber <= endRow
-  );
+    if (currentPosition === 'right') {
+      right.push(row);
+    } else {
+      left.push(row);
+    }
+  });
 
-  const grouped = itemsInRange.reduce(
-    (acc, item) => {
-      if (!acc[item.rowNumber]) acc[item.rowNumber] = [];
-      acc[item.rowNumber].push(item);
-      return acc;
-    },
-    {} as Record<number, ReportItem[]>
-  );
-
-  Object.values(grouped).forEach((group) =>
-    group.sort((a, b) => a.columnNumber - b.columnNumber)
-  );
-
-  return Object.entries(grouped)
-    .sort(([a], [b]) => Number(a) - Number(b))
-    .map(([, group]) => group);
-};
-
-const skontroLeftItems = computed(() => {
-  if (!isSkontroLayout.value) return [];
-  return groupItemsByRow(props.report.items, 'aset', 'jumlah aset');
-});
-
-const skontroRightItems = computed(() => {
-  if (!isSkontroLayout.value) return [];
-  return groupItemsByRow(
-    props.report.items,
-    'liabilitas',
-    'jumlah liabilitas dan ekuitas'
-  );
-});
-
-const skontroGridColumns = computed(() => {
-  return columns.value.length > 1
-    ? `1fr repeat(${columns.value.length}, 0.5fr)`
-    : '1fr 0.5fr';
+  return { left, right };
 });
 
 const getRowAmount = (row: ReportItem[], columnNumber: number) => {
@@ -151,188 +121,18 @@ const getRowAmount = (row: ReportItem[], columnNumber: number) => {
   return formatAmount(item?.amount || '', item?.notation || 'positive');
 };
 
-const getSpacerClass = (val: string): string | undefined => {
-  const spacerGroups: Record<string, string[]> = {
-    low: [
-      'aset lancar',
-      'aset tidak lancar',
-      'jumlah aset',
-      'liabilitas jangka pendek',
-      'liabilitas jangka panjang',
-      'jumlah liabilitas',
-      'ARUS KAS DARI AKTIVITAS INVESTASI',
-      'arus kas dari aktivitas investasi',
-      'arus kas dari aktivitas pendanaan',
-      'kenaikan (penurunan) kas dan setara kas',
-    ],
-    high: [
-      'beban',
-      'laba sebelum pajak penghasilan',
-      props.layout === 'skontro' ? '' : 'liabilitas',
-      'ekuitas',
-      'jumlah liabilitas dan ekuitas',
-    ],
-  };
-
-  const lower = val.toLowerCase();
-
-  if (spacerGroups.low.includes(lower)) return 'mt-3';
-  if (spacerGroups.high.includes(lower)) return 'mt-5';
-
+const getSpacerClass = (spacerType?: string): string | undefined => {
+  if (spacerType === 'low') return 'mt-3';
+  if (spacerType === 'high') return 'mt-5';
   return undefined;
 };
+
+const gridTemplateColumns = computed(() =>
+  `1fr repeat(${columns.value.length}, 0.5fr)`
+);
 </script>
 
 <template>
-  <!-- Skontro Layout (2-column horizontal) -->
-  <div
-    v-bind="$attrs"
-    v-if="isSkontroLayout"
-    class="mx-auto w-full rounded-lg p-4"
-    :class="props.background === 'white' ? 'bg-white' : 'bg-gray-50'"
-  >
-    <div class="mb-6 text-center">
-      <h1
-        class="text-subtitle-medium whitespace-pre-line"
-        v-html="props.report.meta.title"
-      />
-      <p class="text-body-medium text-gray-800">
-        {{ props.report.meta.subtitle }}
-      </p>
-    </div>
-
-    <div class="grid grid-cols-2 items-start gap-8">
-      <template
-        v-for="(items, side) in {
-          left: skontroLeftItems,
-          right: skontroRightItems,
-        }"
-        :key="side"
-      >
-        <div class="flex h-full flex-col justify-between">
-          <!-- Regular items -->
-          <div>
-            <div
-              v-for="row in items.slice(0, -1)"
-              :key="`${side}-${row[0].rowNumber}`"
-              class="grid items-center bg-white py-2 text-start"
-              :class="[
-                getRowClass(row[0].type),
-                getSpacerClass(row[0].rowText),
-              ]"
-              :style="{ gridTemplateColumns: skontroGridColumns }"
-            >
-              <span>{{ row[0].rowText }}</span>
-              <div
-                v-for="col in columns"
-                :key="col.columnNumber"
-                class="pr-4 text-right tabular-nums"
-              >
-                {{ getRowAmount(row, col.columnNumber) }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Last item (bottom aligned with yellow background) -->
-          <div
-            v-if="items.length > 0"
-            :key="`${side}-last-${items[items.length - 1][0].rowNumber}`"
-            class="grid items-center bg-yellow-100 py-2 text-start"
-            :class="[
-              getRowClass(items[items.length - 1][0].type),
-              getSpacerClass(items[items.length - 1][0].rowText),
-            ]"
-            :style="{ gridTemplateColumns: skontroGridColumns }"
-          >
-            <span>{{ items[items.length - 1][0].rowText }}</span>
-            <div
-              v-for="col in columns"
-              :key="col.columnNumber"
-              class="pr-4 text-right tabular-nums"
-            >
-              {{ getRowAmount(items[items.length - 1], col.columnNumber) }}
-            </div>
-          </div>
-        </div>
-      </template>
-    </div>
-  </div>
-
-  <div
-    v-bind="$attrs"
-    v-if="
-      (props.type === 'profit-loss' ||
-        props.type === 'financial-position' ||
-        props.type === 'cashflow') &&
-      !isSkontroLayout
-    "
-    class="mx-auto w-full rounded-lg p-4"
-    :class="props.background === 'white' ? 'bg-white' : 'bg-gray-50'"
-  >
-    <div class="mb-6 text-center">
-      <h1
-        class="text-subtitle-medium whitespace-pre-line"
-        v-html="props.report.meta.title"
-      />
-      <p class="text-body-medium text-gray-800">
-        {{ props.report.meta.subtitle }}
-      </p>
-    </div>
-
-    <div class="relative">
-      <div
-        class="absolute top-0 right-0 left-0 mx-auto grid"
-        :style="{ gridTemplateColumns: `1fr repeat(${columns.length}, 0.5fr)` }"
-      >
-        <span></span>
-        <div
-          v-for="col in columns"
-          :key="col.columnNumber"
-          class="!text-right"
-          :class="Number(col.columnNumber) % 2 ? 'mr-2' : 'pr-4'"
-        >
-          <NBadge
-            v-if="col.columnText"
-            class="ml-auto"
-            type="standard"
-            color="red"
-          >
-            <div class="flex items-center gap-1">
-              {{ col.columnText }}
-              <NIcon name="close" size="14" />
-            </div>
-          </NBadge>
-        </div>
-      </div>
-
-      <div
-        v-for="row in groupedRows"
-        :key="row[0].rowNumber"
-        class="grid items-center bg-white py-2 text-start"
-        :class="[getRowClass(row[0].type), getSpacerClass(row[0].rowText)]"
-        :style="{ gridTemplateColumns: `1fr repeat(${columns.length}, 0.5fr)` }"
-      >
-        <span>{{ row[0].rowText }}</span>
-
-        <div
-          v-for="col in columns"
-          :key="col.columnNumber"
-          class="pr-4 text-right tabular-nums"
-        >
-          {{
-            formatAmount(
-              row.find((i) => i.columnNumber === col.columnNumber)?.amount ||
-                '',
-              row.find((i) => i.columnNumber === col.columnNumber)?.notation ||
-                'positive'
-            )
-          }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Perubahan Ekuitas -->
   <div
     v-bind="$attrs"
     v-if="props.type === 'equity-changes'"
@@ -426,15 +226,109 @@ const getSpacerClass = (val: string): string | undefined => {
               <div v-else class="text-right">
                 {{
                   formatAmount(
-                    row.find((i) => i.columnNumber === col.columnNumber)
-                      ?.amount || '',
-                    row.find((i) => i.columnNumber === col.columnNumber)
-                      ?.notation || 'positive'
+                    row.find((i) => i.columnNumber === col.columnNumber)?.amount || '',
+                    row.find((i) => i.columnNumber === col.columnNumber)?.notation || 'positive'
                   )
                 }}
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    v-bind="$attrs"
+    v-if="
+      props.type === 'profit-loss' ||
+      props.type === 'financial-position' ||
+      props.type === 'cashflow'
+    "
+    class="mx-auto w-full rounded-lg p-4"
+    :class="props.background === 'white' ? 'bg-white' : 'bg-gray-50'"
+  >
+    <div class="mb-6 text-center">
+      <h1
+        class="text-subtitle-medium whitespace-pre-line"
+        v-html="props.report.meta.title"
+      />
+      <p class="text-body-medium text-gray-800">
+        {{ props.report.meta.subtitle }}
+      </p>
+    </div>
+
+    <div v-if="hasMixedPosition" class="grid grid-cols-2 items-start gap-8">
+      <template
+        v-for="(rows, side) in { left: rowsByPosition.left, right: rowsByPosition.right }"
+        :key="side"
+      >
+        <div>
+          <div
+            v-for="row in rows"
+            :key="row[0].rowNumber"
+            class="grid items-center py-2 text-start"
+            :class="[getRowClass(row[0].type), getSpacerClass(row[0].spacerType)]"
+            :style="{ gridTemplateColumns }"
+          >
+            <span>{{ row[0].rowText }}</span>
+            <div
+              v-for="col in columns"
+              :key="col.columnNumber"
+              class="pr-4 text-right tabular-nums"
+            >
+              {{ getRowAmount(row, col.columnNumber) }}
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <div v-else class="relative">
+      <div
+        class="absolute top-0 right-0 left-0 mx-auto grid"
+        :style="{ gridTemplateColumns }"
+      >
+        <span></span>
+        <div
+          v-for="col in columns"
+          :key="col.columnNumber"
+          class="text-right!"
+          :class="Number(col.columnNumber) % 2 ? 'mr-2' : 'pr-4'"
+        >
+          <NBadge
+            v-if="col.columnText"
+            class="ml-auto"
+            type="standard"
+            color="red"
+          >
+            <div class="flex items-center gap-1">
+              {{ col.columnText }}
+              <NIcon name="close" size="14" />
+            </div>
+          </NBadge>
+        </div>
+      </div>
+
+      <div
+        v-for="row in groupedRows"
+        :key="row[0].rowNumber"
+        class="grid items-center bg-white py-2 text-start"
+        :class="[getRowClass(row[0].type), getSpacerClass(row[0].spacerType)]"
+        :style="{ gridTemplateColumns }"
+      >
+        <span>{{ row[0].rowText }}</span>
+        <div
+          v-for="col in columns"
+          :key="col.columnNumber"
+          class="pr-4 text-right tabular-nums"
+        >
+          {{
+            formatAmount(
+              row.find((i) => i.columnNumber === col.columnNumber)?.amount || '',
+              row.find((i) => i.columnNumber === col.columnNumber)?.notation || 'positive'
+            )
+          }}
         </div>
       </div>
     </div>

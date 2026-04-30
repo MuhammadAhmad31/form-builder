@@ -10,6 +10,7 @@ import type {
   FormSection,
   ReportTypeSource,
   RowTypeFromSelectedReportTypeSource,
+  SpacerType,
 } from '@/composables/useFormStructure'
 
 export type FieldType = FormField['type']
@@ -35,6 +36,7 @@ export interface ConfigFieldForm {
   formula: string
   description: string
   previewRowType?: FormPreviewRowType
+  spacerType?: SpacerType
   akunMode?: AkunMode
   akunStrategy?: AkunStrategy
   depthMode?: DepthMode
@@ -202,6 +204,7 @@ export function defaultFieldForm(): ConfigFieldForm {
     formula: '',
     description: '',
     previewRowType: undefined,
+    spacerType: undefined,
     akunMode: 'single' as AkunMode,
     akunStrategy: 'period_net_change' as AkunStrategy,
     depthMode: 'one_level_below' as DepthMode,

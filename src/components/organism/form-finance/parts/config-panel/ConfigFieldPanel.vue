@@ -4,6 +4,7 @@ import type {
   FormField,
   FormPreviewRowType,
   FormSection,
+  SpacerType,
 } from "@/composables/useFormStructure";
 import {
   typeIconClass,
@@ -26,6 +27,7 @@ interface Props {
     formula: string;
     description: string;
     previewRowType?: FormPreviewRowType;
+    spacerType?: SpacerType;
     akunMode?: FormField["akunMode"];
     akunStrategy?: FormField["akunStrategy"];
     depthMode?: FormField["depthMode"];
@@ -47,6 +49,7 @@ const emit = defineEmits<{
   "update-description": [description: string];
   "select-type": [type: FormField["type"]];
   "update-preview-row-type": [rowType?: FormPreviewRowType];
+  "update-spacer-type": [spacerType?: SpacerType];
   "update-mode": [mode: string];
   "update-strategy": [strategy: string];
   "update-depth-mode": [mode: string];
@@ -172,7 +175,7 @@ watch(
         v-for="tab in tabItems"
         :key="tab.id"
         :class="[
-          'px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-[2px]',
+          'px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-0.5',
           activeTab === tab.id
             ? 'border-emerald-500 text-emerald-600'
             : 'border-transparent text-slate-600 hover:text-slate-900',
@@ -218,6 +221,7 @@ watch(
         <DisplayFieldConfig
           :field-form="fieldForm"
           @update-preview-row-type="emit('update-preview-row-type', $event)"
+          @update-spacer-type="emit('update-spacer-type', $event)"
         />
       </div>
     </div>

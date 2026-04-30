@@ -50,7 +50,12 @@ export function useFormBuilder({ fb, storage }: UseFormBuilderOptions) {
   }
 
   const handleUpdateSection = (updates: Partial<FormSection>) => {
-    if (!selectedSectionId.value) return
+    console.log('handleUpdateSection called with:', updates)
+    if (!selectedSectionId.value) {
+      console.log('No selectedSectionId')
+      return
+    }
+    console.log('Calling fb.updateSection with:', selectedSectionId.value, updates)
     fb.updateSection(selectedSectionId.value, updates)
   }
 

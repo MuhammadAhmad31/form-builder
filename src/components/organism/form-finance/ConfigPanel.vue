@@ -51,6 +51,16 @@ const handleHideLabel = (hideLabel: boolean) => {
     emit('update-section', { hideLabel })
   }
 }
+
+const handleUpdatePosition = (position: 'left' | 'right') => {
+  if (props.selectedSection) {
+    emit('update-section', { position })
+  }
+}
+
+const handleUpdateSpacerType = (spacerType: any) => {
+  emit('update-field', { spacerType })
+}
 </script>
 
 <template>
@@ -74,6 +84,8 @@ const handleHideLabel = (hideLabel: boolean) => {
       :section-name="sectionForm.name"
       @update-name="updateSectionName"
       @hide-label="handleHideLabel"
+      @update-position="handleUpdatePosition"
+      @update-spacer-type="(spacerType) => { console.log('ConfigPanel received update-spacer-type:', spacerType); emit('update-section', { spacerType }) }"
     />
 
     <ConfigFieldPanel
@@ -88,6 +100,7 @@ const handleHideLabel = (hideLabel: boolean) => {
       @update-description="(description) => (fieldForm.description = description)"
       @select-type="onTypeClick"
       @update-preview-row-type="onPreviewRowTypeChange"
+      @update-spacer-type="(spacerType: any) => { fieldForm.spacerType = spacerType as any }"
       @update-mode="(mode: string) => { fieldForm.akunMode = mode as any }"
       @update-strategy="(strategy: string) => { fieldForm.akunStrategy = strategy as any }"
       @update-depth-mode="(mode: string) => { fieldForm.depthMode = mode as any }"

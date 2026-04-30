@@ -12,6 +12,7 @@ export interface ReportMeta {
 
 export type ReportItemType = 'section' | 'subsection' | 'item';
 export type ReportItemNotation = 'positive' | 'negative' | null;
+export type ReportItemSpacerType = 'none' | 'low' | 'high';
 
 export interface ReportItem {
   rowNumber: number;
@@ -21,6 +22,8 @@ export interface ReportItem {
   type: ReportItemType;
   amount: string;
   notation: ReportItemNotation;
+  position?: 'left' | 'right';
+  spacerType?: ReportItemSpacerType;
   categoryName?: string;
   categoryId?: string;
   calculatedOf?: {

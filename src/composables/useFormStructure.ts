@@ -10,6 +10,7 @@ export type CategoryStrategy = 'period_net_change' | 'ending_balance' | 'beginni
 export type ReportTypeSource = 'cash_flow' | 'profit_loss' | 'financial_position' | 'equity'
 export type RowTypeFromSelectedReportTypeSource = 'operating_activities' | 'investing_activities' | 'financing_activities' | 'non_operating_income_expense' | 'income' | 'cost_of_revenue' | 'expense' | 'current_assets' | 'non_current_assets' | 'current_liabilities' | 'non_current_liabilities' | 'equity'
 export type FirstLevel = 'asset' | 'liability' | 'equity' | 'income' | 'expense'
+export type SpacerType = 'none' | 'low' | 'high'
 
 export interface FormField {
   id: string
@@ -19,6 +20,7 @@ export interface FormField {
   formula?: string
   description?: string
   previewRowType?: FormPreviewRowType
+  spacerType?: SpacerType
   akunMode?: AkunMode
   akunStrategy?: AkunStrategy
   depthMode?: DepthMode
@@ -32,6 +34,8 @@ export interface FormField {
 export interface FormSection {
   id: string
   name: string
+  position?: 'left' | 'right'
+  spacerType?: SpacerType
   fields: FormField[]
   collapsed?: boolean
   hideLabel?: boolean

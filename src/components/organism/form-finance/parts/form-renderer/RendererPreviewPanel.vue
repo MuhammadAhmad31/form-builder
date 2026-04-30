@@ -65,6 +65,8 @@ const reportTableData = computed<Report>(() => {
         notation: null,
         categoryId: section.id,
         categoryName: section.name,
+        position: section.position || 'left',
+        spacerType: section.spacerType || 'none',
       });
       rowNumber += 1;
     }
@@ -85,6 +87,8 @@ const reportTableData = computed<Report>(() => {
         notation: Number.isFinite(numericValue) && numericValue < 0 ? "negative" : "positive",
         categoryId: section.id,
         categoryName: section.name,
+        position: section.position || 'left',
+        spacerType: field.spacerType || 'none',
       });
       rowNumber += 1;
     });

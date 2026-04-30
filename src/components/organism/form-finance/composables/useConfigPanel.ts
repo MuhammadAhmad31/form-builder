@@ -59,6 +59,7 @@ export function useConfigPanel(props: Props, emit: Emits) {
       formula: field.formula || '',
       description: field.description || '',
       previewRowType: field.previewRowType,
+      spacerType: field.spacerType,
       akunMode: field.akunMode,
       akunStrategy: field.akunStrategy,
       depthMode: field.depthMode,
