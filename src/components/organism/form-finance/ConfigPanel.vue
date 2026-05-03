@@ -38,7 +38,7 @@ const {
   toggleToken,
   removeToken,
   clearTokens,
-  
+
 } = useConfigPanel(props, emit)
 
 const updateSectionName = (name: string) => {
@@ -58,9 +58,6 @@ const handleUpdatePosition = (position: 'left' | 'right') => {
   }
 }
 
-const handleUpdateSpacerType = (spacerType: any) => {
-  emit('update-field', { spacerType })
-}
 </script>
 
 <template>
